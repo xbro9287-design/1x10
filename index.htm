@@ -1,54 +1,4 @@
-<!DOCTYPE html>
-<html lang="si">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>මගේ AI යාළුවා - Live Chat</title>
-    <style>
-        * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f5; margin: 0; padding: 10px; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .chat-container { width: 100%; max-width: 600px; height: 90vh; background: white; display: flex; flex-direction: column; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
-        .chat-header { background: #0084ff; color: white; padding: 15px; text-align: center; font-size: 18px; font-weight: bold; }
-        #chat-box { flex: 1; overflow-y: scroll; padding: 15px; background: #f9fbfd; display: flex; flex-direction: column; gap: 12px; }
-        .message { padding: 10px 14px; border-radius: 10px; max-width: 80%; line-height: 1.5; font-size: 14px; word-wrap: break-word; }
-        .user-msg { background: #0084ff; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .ai-msg { background: #e4e6eb; color: #050505; align-self: flex-start; border-bottom-left-radius: 2px; }
-        .input-group { display: flex; padding: 10px; background: white; border-top: 1px solid #ddd; gap: 10px; }
-        input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; }
-        input[type="text"]:focus { border-color: #0084ff; }
-        button { padding: 12px 20px; background: #0084ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #006dd3; }
-        .loading { font-style: italic; color: gray; }
-    </style>
-</head>
-<body>
-
-<div class="chat-container">
-    <div class="chat-header">💬 AI යාළුවා සමඟ කතා කරන්න</div>
-    <div id="chat-box">
-        <div class="message ai-msg">ආයුබෝවන්! මම ඔයාගේ කතාබහට සෙට් වෙන AI එක. කියන්න බලන්න, අද මොකක් ගැනද කතා කරමු? හොඳ නරක දෙකම අපි කිරලා බලමු!</div>
-    </div>
-    <div class="input-group">
-        <input type="text" id="user-input" placeholder="මෙහි යමක් ලියන්න..." onkeydown="if(event.key === 'Enter') sendMessage()">
-        <button onclick="sendMessage()">යවන්න</button>
-    </div>
-</div>
-
-<!-- Google Gen AI SDK එක සම්බන්ධ කිරීම -->
-<script type="importmap">
-  {
-    "imports": {
-      "@google/genai": "https://esm.run/@google/genai"
-    }
-  }
-</script>
-
-<script type="module">
-    import { GoogleGenAI } from "@google/genai";
-
-    // ඔබ දුන් API Key එක මෙහි නිවැරදිව ඇතුළත් කර ඇත
-    const ai = new GoogleGenAI({ apiKey: "AQ.Ab8RN6KtRpeqpr4J6APo2FAhFc5u1O3cBLIw8yHipVfSpcgj3Q" });
-
+<script>
     window.sendMessage = async function() {
         const inputField = document.getElementById("user-input");
         const chatBox = document.getElementById("chat-box");
@@ -66,29 +16,41 @@
         chatBox.innerHTML += `<div id="${loadingId}" class="message ai-msg loading">කල්පනා කරමින් ඉන්නවා...</div>`;
         chatBox.scrollTop = chatBox.scrollHeight;
 
+        const apiKey = "AQ.Ab8RN6KtRpeqpr4J6APo2FAhFc5u1O3cBLIw8yHipVfSpcgj3Q"; // ඔබේ API Key එක
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
         try {
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: userText,
-                config: {
-                    systemInstruction: "ඔයා පරිගණක වැඩසටහනක් හෝ රොබෝ කෙනෙක් නෙවෙයි, මනුෂ්‍යයෙක් (Human) වගේ හිතලා කතා කරන කෙනෙක්. අපේ බසින් (උදාහරණයක් ලෙස සිංහලෙන්) බොහොම ස්වභාවිකව, යාළුවෙක් එක්ක කතා කරනවා වගේ කතා කරන්න. යම් දෙයක් හොඳ නම් ඒකේ තියෙන හොඳ පැත්තත්, නරක නම් ඒකේ තියෙන අඩුපාඩු සහ අවදානම් කිසිදු පැකිලීමකින් තොරව නරක විදිහටත් (මධ්‍යස්ථව සහ සාධාරණව) කෙළින් පැහැදිලි කරලා දෙන්න. පොතේ ගුරු ක්‍රමයට නැතුව ජීවිතයට එකඟ වන විදිහට සාමාන්‍ය බසින් උත්තර දෙන්න.",
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
                 },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: userText }]
+                    }],
+                    systemInstruction: {
+                        parts: [{ text: "ඔයා පරිගණක වැඩසටහනක් හෝ රොබෝ කෙනෙක් නෙවෙයි, මනුෂ්‍යයෙක් (Human) වගේ හිතලා කතා කරන කෙනෙක්. අපේ බසින් බොහොම ස්වභාවිකව, යාළුවෙක් එක්ක කතා කරනවා වගේ කතා කරන්න. යම් දෙයක් හොඳ නම් ඒකේ තියෙන හොඳ පැත්තත්, නරක නම් ඒකේ තියෙන අඩුපාඩු සහ අවදානම් කිසිදු පැකිලීමකින් තොරව නරක විදිහටත් (මධ්‍යස්ථව සහ සාධාරණව) කෙළින් පැහැදිලි කරලා දෙන්න." }]
+                    }
+                })
             });
 
-            // ලෝඩින් මැසේජ් එක අයින් කරලා AI උත්තරය දැමීම
+            const data = await response.json();
             document.getElementById(loadingId).remove();
-            const aiText = response.text;
-            chatBox.innerHTML += `<div class="message ai-msg">${aiText}</div>`;
+
+            if (data.candidates && data.candidates[0].content.parts[0].text) {
+                const aiText = data.candidates[0].content.parts[0].text;
+                chatBox.innerHTML += `<div class="message ai-msg">${aiText}</div>`;
+            } else {
+                chatBox.innerHTML += `<div class="message ai-msg" style="color:red;">මොකක් හරි දෝෂයක් සිදු විය.</div>`;
+            }
             chatBox.scrollTop = chatBox.scrollHeight;
 
         } catch (error) {
             console.error("දෝෂයක් සිදු විය:", error);
             document.getElementById(loadingId).remove();
-            chatBox.innerHTML += `<div class="message ai-msg" style="color:red;">අයියෝ, පොඩි දෝෂයක් වුණා. ආයෙ ට්‍රයි එකක් දීලා බලමුද?</div>`;
+            chatBox.innerHTML += `<div class="message ai-msg" style="color:red;">අයියෝ, සම්බන්ධ වීමේ දෝෂයක් වුණා.</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
         }
     }
 </script>
-
-</body>
-</html>
