@@ -3,123 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hacker 3D Earth Globe</title>
+    <title>ASCII Earth Globe - Hacker Style</title>
     <style>
         body {
             margin: 0;
-            overflow: hidden;
+            padding: 0;
             background-color: #000000;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        #canvas-container {
-            width: 100vw;
-            height: 100vh;
-        }
-        .hud-text {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
             color: #00FF66;
-            font-size: 14px;
-            letter-spacing: 2px;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #globe-container {
+            white-space: pre;
+            font-size: 11px;
+            line-height: 10px;
+            text-align: center;
             text-shadow: 0 0 5px #00FF66;
-            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <div id="canvas-container"></div>
-    <div class="hud-text">[SYSTEM SECURE] TARGET: EARTH // MATRIX ROTATION ACTIVE</div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <div id="globe-container"></div>
 
     <script>
-        // 1. Scene, Camera සහ Renderer සැකසීම
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x000000);
+        const container = document.getElementById('globe-container');
+        
+        // ලෝක ගෝලයේ හැඩය සහ අක්ෂර රටාව (ASCII Art frames for rotation)
+        const globeFrames = [
+            `
+          ---------          
+       ---         ---       
+     --               --     
+    -    @@@@@@@@@@     -    
+   -   @@@@@@@@@@@@@@    -   
+  -   @@@@@@@@@@@@@@@@    -  
+  -   @@@@@@@@@@@@@@@@    -  
+   -   @@@@@@@@@@@@@@    -   
+    -    @@@@@@@@@@     -    
+     --               --     
+       ---         ---       
+          ---------          
+            `,
+            `
+          ---------          
+       ---         ---       
+     --               --     
+    -    ############     -    
+   -   ################    -   
+  -   ##################    -  
+  -   ##################    -  
+   -   ################    -   
+    -    ############     -    
+     --               --     
+       ---         ---       
+          ---------          
+            `,
+            `
+          ---------          
+       ---         ---       
+     --               --     
+    -    .............     -    
+   -   ................    -   
+  -   ..................    -  
+  -   ..................    -  
+   -   ................    -   
+    -    .............     -    
+     --               --     
+       ---         ---       
+          ---------          
+            `,
+            `
+          ---------          
+       ---         ---       
+     --               --     
+    -    0101010101     -    
+   -   01010101010101    -   
+  -   0101010101010101    -  
+  -   0101010101010101    -  
+   -   01010101010101    -   
+    -    0101010101     -    
+     --               --     
+       ---         ---       
+          ---------          
+            `
+        ];
 
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 250;
+        let currentFrame = 0;
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
-
-        // 2. හැකර් ලෝක ගෝලය (3D Wireframe & Dot Sphere) නිර්මාණය කිරීම
-        const globeGroup = new THREE.Group();
-
-        // ප්‍රධාන ගෝලීය පදනම (Dark Core)
-        const coreGeometry = new THREE.SphereGeometry(80, 32, 32);
-        const coreMaterial = new THREE.MeshBasicMaterial({ color: 0x000500 });
-        const coreMesh = new THREE.Mesh(coreGeometry, coreMaterial);
-        globeGroup.add(coreMesh);
-
-        // හැකර් කොළ පාට වයර්ෆ්‍රේම් ජාලය (Wireframe Globe)
-        const wireGeometry = new THREE.SphereGeometry(81, 24, 24);
-        const wireMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0x00FF66, 
-            wireframe: true,
-            transparent: true,
-            opacity: 0.3
-        });
-        const wireMesh = new THREE.Mesh(wireGeometry, wireMaterial);
-        globeGroup.add(wireMesh);
-
-        // 3. ගෝලය වටා පාවෙන හැකර් අංක සහ කේත (Matrix Number Particles)
-        const particleCount = 400;
-        const particlesGeometry = new THREE.BufferGeometry();
-        const particlesPositions = [];
-
-        for(let i = 0; i < particleCount; i++) {
-            const u = Math.random();
-            const v = Math.random();
-            const theta = u * 2.0 * Math.PI;
-            const phi = Math.acos(2.0 * v - 1.0);
-            const r = 90 + Math.random() * 40; // ගෝලයෙන් මඳක් එළියට වන්නට
-
-            const x = r * Math.sin(phi) * Math.cos(theta);
-            const y = r * Math.sin(phi) * Math.sin(theta);
-            const z = r * Math.cos(phi);
-
-            particlesPositions.push(x, y, z);
+        function animateGlobe() {
+            container.innerText = globeFrames[currentFrame];
+            currentFrame = (currentFrame + 1) % globeFrames.length;
         }
 
-        particlesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(particlesPositions, 3));
-
-        // කේත පෙනුම ලබාදීමට රවුම් තිත් (Points) භාවිතය
-        const particlesMaterial = new THREE.PointsMaterial({
-            color: 0x00FF66,
-            size: 3,
-            transparent: true,
-            opacity: 0.8
-        });
-
-        const particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
-        globeGroup.add(particleSystem);
-
-        scene.add(globeGroup);
-
-        // 4. ඇනිමේෂන් සහ කැරකවීම
-        function animate() {
-            requestAnimationFrame(animate);
-
-            // ගෝලය සහ අංක කැරකවීම
-            globeGroup.rotation.y += 0.005;
-            particleSystem.rotation.y -= 0.002;
-
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // බ්‍රව්සරය රීසයිස් වීම හැසිරවීම
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        // වේගවත් හැකර් ලුක් එකක් සඳහා මිලි තත්පර 150 කට වරක් වෙනස් වීම
+        setInterval(animateGlobe, 150);
     </script>
 </body>
 </html>
