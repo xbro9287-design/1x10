@@ -1,3 +1,39 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>මගේ AI යාළුවා - Live Chat</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f5; margin: 0; padding: 10px; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .chat-container { width: 100%; max-width: 600px; height: 90vh; background: white; display: flex; flex-direction: column; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .chat-header { background: #0084ff; color: white; padding: 15px; text-align: center; font-size: 18px; font-weight: bold; }
+        #chat-box { flex: 1; overflow-y: scroll; padding: 15px; background: #f9fbfd; display: flex; flex-direction: column; gap: 12px; }
+        .message { padding: 10px 14px; border-radius: 10px; max-width: 80%; line-height: 1.5; font-size: 14px; word-wrap: break-word; }
+        .user-msg { background: #0084ff; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .ai-msg { background: #e4e6eb; color: #050505; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .input-group { display: flex; padding: 10px; background: white; border-top: 1px solid #ddd; gap: 10px; }
+        input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; }
+        input[type="text"]:focus { border-color: #0084ff; }
+        button { padding: 12px 20px; background: #0084ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #006dd3; }
+        .loading { font-style: italic; color: gray; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">💬 AI යාළුවා සමඟ කතා කරන්න</div>
+    <div id="chat-box">
+        <div class="message ai-msg">ආයුබෝවන්! මම ඔයාගේ කතාබහට සෙට් වෙන AI එක. කියන්න බලන්න, අද මොකක් ගැනද කතා කරමු? හොඳ නරක දෙකම අපි කිරලා බලමු!</div>
+    </div>
+    <div class="input-group">
+        <input type="text" id="user-input" placeholder="මෙහි යමක් ලියන්න..." onkeydown="if(event.key === 'Enter') sendMessage()">
+        <button onclick="sendMessage()">යවන්න</button>
+    </div>
+</div>
+
 <script>
     window.sendMessage = async function() {
         const inputField = document.getElementById("user-input");
@@ -42,7 +78,8 @@
                 const aiText = data.candidates[0].content.parts[0].text;
                 chatBox.innerHTML += `<div class="message ai-msg">${aiText}</div>`;
             } else {
-                chatBox.innerHTML += `<div class="message ai-msg" style="color:red;">මොකක් හරි දෝෂයක් සිදු විය.</div>`;
+                console.error("API Response Data:", data);
+                chatBox.innerHTML += `<div class="message ai-msg" style="color:red;">මොකක් හරි දෝෂයක් සිදු විය. (API Error)</div>`;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -54,3 +91,6 @@
         }
     }
 </script>
+
+</body>
+</html>
