@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ලොකේෂන් ලබාගැනීම</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            background: #white;
+            padding: 30px;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        a {
+            color: #1a73e8;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>ඔබේ ස්ථානය (Location) ලබාගන්න</h2>
+        <button onclick="getLocation()">ලොකේෂන් බලන්න</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function getLocation() {
+            const resultElement = document.getElementById("result");
+            
+            if (navigator.geolocation) {
+                resultElement.innerHTML = "ස්ථානය සෙවීම සිදුකෙරේ... කරුණාකර රැඳී සිටින්න.";
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                resultElement.innerHTML = "ඔබේ බ්‍රව්සරය Geolocation සඳහා සහය නොදක්වයි.";
+            }
+        }
+
+        function showPosition(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            document.getElementById("result").innerHTML = 
+                "අක්ෂාංශ (Latitude): " + lat + "<br>දේශාංශ (Longitude): " + lon + 
+                "<br><br><a href='https://www.google.com/maps?q=" + lat + "," + lon + "' target='_blank'>📍 Google Maps එකේ බලන්න</a>";
+        }
+
+        function showError(error) {
+            const resultElement = document.getElementById("result");
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    resultElement.innerHTML = "පරිශීලකයා ලොකේෂන් ලබාදීම ප්‍රතික්ෂේප කළා.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    resultElement.innerHTML = "ස්ථාන තොරතුරු ලබාගත නොහැක.";
+                    break;
+                case error.TIMEOUT:
+                    resultElement.innerHTML = "කාලය ඉක්මවා ගියේය. නැවත උත්සාහ කරන්න.";
+                    break;
+                default:
+                    resultElement.innerHTML = "නොදන්නා දෝෂයක් ඇති විය.";
+                    break;
+            }
+        }
+    </script>
+
+</body>
+</html>
+
