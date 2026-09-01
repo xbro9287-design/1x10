@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER_NET v4.0 - Ultimate Hacker Control System</title>
+    <title>CYBER_NET v4.1 - Ultimate Hacker Control System</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://unpkg.com/three-globe@2.27.0/dist/three-globe.min.js"></script>
     <style>
@@ -119,7 +119,7 @@
         .chat-container {
             width: 380px;
             height: 450px;
-            background: rgba(0, 5, 2, 0.92);
+            background: rgba(0, 5, 2, 0.95);
             border: 1px solid #00FF66;
             display: flex;
             flex-direction: column;
@@ -223,20 +223,20 @@
         <div class="content-body">
             <div class="left-info">
                 <h3>[SYSTEM LOGS]</h3>
-                <p>> Global network encryption: 100%<br>> AI Neural Link: ONLINE<br>> Target tracking: SECURED<br>> Unauthorized access detected & blocked.</p>
+                <p>> Global network encryption: 100%<br>> AI Neural Link: ONLINE<br>> Target tracking: SECURED<br>> Live message stream verified.</p>
             </div>
 
             <div class="chat-container">
                 <div class="chat-header">
-                    <span>[AI_TERMINAL v4.0]</span>
-                    <span>🟢 AI READY</span>
+                    <span>[AI_TERMINAL v4.1]</span>
+                    <span>🟢 LIVE</span>
                 </div>
                 <div class="chat-messages" id="chatMessages">
-                    <div class="message incoming">ස්වාමියා වෙතයි, CYBER_NET පද්ධතිය සම්පූර්ණයෙන්ම සක්‍රීයයි. මගෙන් කුමක් කරවා ගැනීමට අවශ්‍යද?</div>
+                    <div class="message incoming">පද්ධතිය සක්‍රීයයි! දැන් ඔබට ඕනෑම පණිවිඩයක් මෙහි ටයිප් කර යැවිය හැක.</div>
                 </div>
                 <div class="chat-input-area">
-                    <input type="text" id="userInput" placeholder="විධානයක් හෝ ප්‍රශ්නයක් ටයිප් කරන්න..." autocomplete="off">
-                    <button onclick="sendMessage()">SEND</button>
+                    <input type="text" id="userInput" placeholder="පණිවිඩයක් ටයිප් කරන්න..." autocomplete="off">
+                    <button type="button" id="sendBtn">SEND</button>
                 </div>
             </div>
         </div>
@@ -331,28 +331,35 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // 3. AI Chat Box ක්‍රියාවලිය (Real AI / Advanced Assistant)
+        // 3. නිවැරදි කළ AI Chat Box පණිවිඩ යැවීමේ ක්‍රියාවලිය
         const chatMessages = document.getElementById('chatMessages');
         const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
 
-        userInput.addEventListener('keypress', function(e) {
+        // බට්න් එක ක්ලික් කළ විට පණිවිඩය යැවීම
+        sendBtn.addEventListener('click', handleUserMessage);
+
+        // Enter ඔබ වැටුණු විට පණිවිඩය යැවීම
+        userInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
-                sendMessage();
+                e.preventDefault();
+                handleUserMessage();
             }
         });
 
-        function sendMessage() {
+        function handleUserMessage() {
             const text = userInput.value.trim();
             if (text === "") return;
 
+            // පරිශීලකයා යැවූ මැසේජ් එක චැට් එකට එකතු කිරීම
             appendMessage(text, 'outgoing');
             userInput.value = "";
 
-            // AI පිළිතුර ලබා දීම (මෙහිදී සැබෑ AI API එකක් හෝ උසස් පද්ධති පිළිතුරු සම්බන්ධ කළ හැක)
+            // AI පිළිතුර ක්ෂණිකව ලබා දීම
             setTimeout(() => {
-                const reply = getAdvancedAIResponse(text);
+                const reply = getAIResponse(text);
                 appendMessage(reply, 'incoming');
-            }, 600);
+            }, 500);
         }
 
         function appendMessage(text, type) {
@@ -363,16 +370,14 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        function getAdvancedAIResponse(input) {
+        function getAIResponse(input) {
             const lower = input.toLowerCase();
             if (lower.includes('hello') || lower.includes('hi') || lower.includes('හෙලෝ')) {
-                return "සැකසුම් සාර්ථකයි! මම ඔබේ ප්‍රධාන හැකර් AI සහායකයා වෙමි. අපට කුමන මෙහෙයුමක්ද ආරම්භ කළ යුත්තේ?";
-            } else if (lower.includes('status') || lower.includes('system') || lower.includes('තත්ත්වය')) {
-                return "පද්ධති තත්ත්වය: සියලුම සර්වර් සහ ගෝලීය දත්ත ධාවක ආරක්ෂිතයි [SECURE MODE].";
-            } else if (lower.includes('hack') || lower.includes('cyber')) {
-                return "හැකර් ප්‍රොටෝකෝලය ක්‍රියාත්මකයි. ඉලක්කය තහවුරු කර ඇත!";
+                return "ආයුබෝවන්! පණිවිඩය සාර්ථකව ලැබුණි. මම ඔබගේ විධානය ක්‍රියාත්මක කිරීමට සූදානම්.";
+            } else if (lower.includes('status') || lower.includes('තත්ත්වය')) {
+                return "පද්ධතිය ක්‍රියාත්මකයි. සියලුම චැට් ප්‍රොටෝකෝල සක්‍රීය කර ඇත.";
             } else {
-                return `පණිවිඩය ලැබුණි: "${input}". AI ස්නායු පද්ධතිය (Neural Net) එය විශ්ලේෂණය කරමින් පවතී...`;
+                return `ලැබුණු පණිවිඩය: "${input}". AI පද්ධතිය එය තහවුරු කර ගත්තා!`;
             }
         }
     </script>
