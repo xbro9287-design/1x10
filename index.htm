@@ -3,127 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>මගේ ස්ථානය සොයාගැනීම</title>
+    <title>Hacker 3D Earth Globe</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
-            color: #333;
+            overflow: hidden;
+            background-color: #000000;
+            font-family: 'Courier New', Courier, monospace;
         }
-        .card {
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
         }
-        h2 {
-            margin-bottom: 20px;
-            color: #2d3436;
-        }
-        button {
-            background-color: #00b894;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s;
-        }
-        button:hover {
-            background-color: #00a884;
-            transform: scale(1.05);
-        }
-        #result {
-            margin-top: 25px;
-            font-size: 16px;
-            text-align: left;
-            background: #f1f2f6;
-            padding: 15px;
-            border-radius: 8px;
-            display: none;
-            line-height: 1.8;
-        }
-        a {
-            color: #0984e3;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        a:hover {
-            text-decoration: underline;
+        .hud-text {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #00FF66;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px #00FF66;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>📍 ස්ථානය සොයන්න</h2>
-        <button onclick="findLocation()">ලොකේෂන් බලන්න</button>
-        <div id="result"></div>
-    </div>
+    <div id="canvas-container"></div>
+    <div class="hud-text">[SYSTEM SECURE] GLOBAL TARGET ACQUIRED // ROTATION ACTIVE...</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three-globe@2.27.0/dist/three-globe.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
     <script>
-        function findLocation() {
-            const resultDiv = document.getElementById("result");
-            resultDiv.style.display = "block";
-            resultDiv.innerHTML = "ස්ථානය සෙවීම සිදුකෙරේ... කරුණාකර රැඳී සිටින්න.";
+        // 1. Scene, Camera සහ Renderer සැකසීම
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
 
-            // පළමුව බ්‍රව්සරයේ GPS (Geolocation) මඟින් උත්සාහ කරයි
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        resultDiv.innerHTML = `
-                            <b>GPS මඟින් සාර්ථකයි!</b><br>
-                            අක්ෂාංශ: ${lat}<br>
-                            දේශාංශ: ${lon}<br><br>
-                            <a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">🗺️ Google Maps එකේ බලන්න</a>
-                        `;
-                    },
-                    (error) => {
-                        // GPS බැරි නම් IP හරහා ලොකේෂන් එක ලබා ගැනීමට උත්සාහ කරයි (Fallback)
-                        getIPLocation();
-                    },
-                    { timeout: 10000 }
-                );
-            } else {
-                getIPLocation();
-            }
-        }
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 350;
 
-        // IP address එක මඟින් නගරය සහ රට සොයාගැනීමේ ක්‍රමය
-        function getIPLocation() {
-            fetch('https://ipapi.co/json/')
-                .then(response => response.json())
-                .then(data => {
-                    const resultDiv = document.getElementById("result");
-                    if (data.city) {
-                        resultDiv.innerHTML = `
-                            <b>ජාලය (IP) හරහා සොයාගත් තොරතුරු:</b><br>
-                            රට: ${data.country_name}<br>
-                            නගරය: ${data.city}<br>
-                            ප්‍රාන්තය: ${data.region}<br><br>
-                            <a href="https://www.google.com/maps?q=${data.latitude},${data.longitude}" target="_blank">🗺️ Google Maps එකේ බලන්න</a>
-                        `;
-                    } else {
-                        resultDiv.innerHTML = "ස්ථාන තොරතුරු ලබාගැනීමට නොහැකි විය.";
-                    }
-                })
-                .catch(() => {
-                    document.getElementById("result").innerHTML = "දෝෂයක් ඇති විය. අන්තර්ජාල සම්බන්ධතාව පරීක්ෂා කරන්න.";
-                });
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        // 2. හැකර් පාටින් (Matrix Green) ලෝක ගෝලය සකස් කිරීම
+        const Globe = new ThreeGlobe()
+            .globeImageUrl('https://unpkg.com/three-globe@2.27.0/example/img/earth-night.jpg')
+            .bumpImageUrl('https://unpkg.com/three-globe@2.27.0/example/img/earth-topology.png');
+
+        // ගෝලයේ ද්‍රව්‍ය (Material) වෙනස් කර හැකර් ලුක් එක ලබා දීම
+        Globe.material().color = new THREE.Color(0x003311); // අඳුරු කොළ පැහැති පදනම
+        Globe.material().emissive = new THREE.Color(0x002200);
+        Globe.material().emissiveIntensity = 0.2;
+        Globe.material().wireframe = false;
+
+        scene.add(Globe);
+
+        // රටවල් සහ දේශසීමා උද්දීපනය (Polygon Borders) කොළ පාටින් පෙන්වීම
+        fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
+            .then(res => res.json())
+            .then(countries => {
+                Globe
+                    .polygonsData(countries.features)
+                    .polygonCapColor(() => 'rgba(0, 20, 5, 0.6)')
+                    .polygonSideColor(() => 'rgba(0, 255, 102, 0.1)')
+                    .polygonStrokeColor(() => '#00FF66'); // හැකර් කොළ පාට දේශසීමා
+            });
+
+        // 3. හැකර් කේත සහ අංක (Matrix Code Rain Effect) ගෝලය වටා එක් කිරීම
+        const canvasCount = 100;
+        const numbersGroup = new THREE.Group();
+        
+        // අංක සහ අකුරු අහඹු ලෙස ජනනය කිරීම
+        const chars = "0123456789ABCDEF010101";
+        
+        for (let i = 0; i < 300; i++) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#00FF66';
+            ctx.font = 'Bold 32px Courier New';
+            ctx.fillText(chars[Math.floor(Math.random() * chars.length)], 16, 48);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 0.8 });
+            const sprite = new THREE.Sprite(material);
+
+            // ගෝලය වටා අහඹු ලෙස විසුරුවා හැරීම
+            const phi = Math.acos(-1 + (2 * i) / 300);
+            const theta = Math.sqrt(300 * Math.PI) * phi;
+
+            sprite.position.setFromSphericalCoords(110 + Math.random() * 40, phi, theta);
+            numbersGroup.add(sprite);
         }
+        scene.add(numbersGroup);
+
+        // 4. ආලෝකකරණය (Lighting)
+        const ambientLight = new THREE.AmbientLight(0x00FF66, 1.5);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1).normalize();
+        scene.add(directionalLight);
+
+        // 5. ඇනිමේෂන් සහ කැරකවීම (Animation Loop)
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // ලෝක ගෝලය ස්වයංක්‍රීයව කරකවීම
+            Globe.rotation.y += 0.003;
+            numbersGroup.rotation.y -= 0.001; // අංක විරුද්ධ දිශාවට කරකැවීමෙන් හැකර් ලුක් එක වැඩි කරයි
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // ස්ක්‍රීන් එක වෙනස් වන විට (Resize) සකස් වීම
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
-
 </body>
 </html>
