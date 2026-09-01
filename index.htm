@@ -52,7 +52,8 @@
         chatBox.innerHTML += `<div id="${loadingId}" class="message ai-msg loading">කල්පනා කරමින් ඉන්නවා...</div>`;
         chatBox.scrollTop = chatBox.scrollHeight;
 
-        const apiKey = "AQ.Ab8RN6KtRpeqpr4J6APo2FAhFc5u1O3cBLIw8yHipVfSpcgj3Q"; // ඔබේ API Key එක
+        // නිවැරදි කළ API Key එක මෙහි ඇතුළත් කර ඇත
+        const apiKey = "AIzaSyAs8C18Zgn7UiHKRVgjztpJ8WJ-MCqoaQ";
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
         try {
