@@ -3,383 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER_NET v4.1 - Ultimate Hacker Control System</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://unpkg.com/three-globe@2.27.0/dist/three-globe.min.js"></script>
+    <title>මගේ AI යාළුවා - Live Chat</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body, html {
-            width: 100%;
-            height: 100%;
-            background-color: #000000;
-            color: #00FF66;
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
-        }
-        /* පසුබිම් මැට්‍රික්ස් අංක වැටෙන කෑන්වස් එක */
-        #matrix-rain {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 1;
-            opacity: 0.25;
-            pointer-events: none;
-        }
-        /* ත්‍රිමාණ ලෝක ගෝල කෑන්වස් එක */
-        #canvas-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 2;
-            pointer-events: none;
-        }
-        /* ප්‍රධාන ලේআউট එක */
-        .main-wrapper {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            display: grid;
-            grid-template-rows: 70px 1fr;
-            pointer-events: none;
-        }
-        /* උඩ හෙඩර් කොටස */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 30px;
-            background: rgba(0, 5, 2, 0.9);
-            border-bottom: 1px solid #00FF66;
-            pointer-events: auto;
-            box-shadow: 0 0 20px rgba(0, 255, 102, 0.4);
-        }
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .logo-icon {
-            font-size: 24px;
-            text-shadow: 0 0 10px #00FF66;
-            animation: pulse 1.5s infinite;
-        }
-        .site-title {
-            font-size: 20px;
-            font-weight: bold;
-            letter-spacing: 3px;
-            text-shadow: 0 0 8px #00FF66;
-        }
-        .system-status {
-            font-size: 13px;
-            letter-spacing: 2px;
-            color: #00cc52;
-            text-shadow: 0 0 5px #00FF66;
-        }
-        /* පහළ කන්ටෙන්ට් එක */
-        .content-body {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            padding: 30px;
-            pointer-events: none;
-        }
-        .left-info {
-            background: rgba(0, 10, 3, 0.85);
-            border: 1px solid #00FF66;
-            padding: 20px;
-            max-width: 350px;
-            pointer-events: auto;
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
-            border-radius: 4px;
-        }
-        .left-info h3 {
-            font-size: 15px;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
-            border-bottom: 1px dashed #00FF66;
-            padding-bottom: 5px;
-        }
-        .left-info p {
-            font-size: 12px;
-            line-height: 1.5;
-            color: #00b347;
-        }
-        /* AI Chat Box එක */
-        .chat-container {
-            width: 380px;
-            height: 450px;
-            background: rgba(0, 5, 2, 0.95);
-            border: 1px solid #00FF66;
-            display: flex;
-            flex-direction: column;
-            pointer-events: auto;
-            box-shadow: 0 0 20px rgba(0, 255, 102, 0.5);
-            border-radius: 4px;
-        }
-        .chat-header {
-            background-color: #001a05;
-            padding: 12px 15px;
-            font-size: 13px;
-            letter-spacing: 2px;
-            border-bottom: 1px solid #00FF66;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .chat-messages {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .message {
-            max-width: 85%;
-            padding: 10px 12px;
-            font-size: 12px;
-            line-height: 1.4;
-            border-radius: 3px;
-            word-wrap: break-word;
-        }
-        .message.incoming {
-            background-color: #001a05;
-            border: 1px solid #00FF66;
-            align-self: flex-start;
-            box-shadow: 0 0 5px rgba(0, 255, 102, 0.2);
-        }
-        .message.outgoing {
-            background-color: #003311;
-            border: 1px solid #00FF66;
-            align-self: flex-end;
-            text-shadow: 0 0 3px #00FF66;
-        }
-        .chat-input-area {
-            display: flex;
-            padding: 12px;
-            background-color: #001100;
-            border-top: 1px solid #00FF66;
-        }
-        .chat-input-area input {
-            flex: 1;
-            background-color: #000000;
-            border: 1px solid #00FF66;
-            color: #00FF66;
-            padding: 10px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 12px;
-            outline: none;
-            border-radius: 3px;
-        }
-        .chat-input-area button {
-            background-color: #00FF66;
-            color: #000000;
-            border: none;
-            padding: 0 18px;
-            margin-left: 8px;
-            font-weight: bold;
-            font-family: 'Courier New', Courier, monospace;
-            cursor: pointer;
-            border-radius: 3px;
-            transition: 0.2s;
-        }
-        .chat-input-area button:hover {
-            background-color: #00cc52;
-            box-shadow: 0 0 10px #00FF66;
-        }
-        @keyframes pulse {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; text-shadow: 0 0 15px #00FF66; }
-            100% { opacity: 0.5; }
-        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f5; margin: 0; padding: 10px; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .chat-container { width: 100%; max-width: 600px; height: 90vh; background: white; display: flex; flex-direction: column; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .chat-header { background: #0084ff; color: white; padding: 15px; text-align: center; font-size: 18px; font-weight: bold; }
+        #chat-box { flex: 1; overflow-y: scroll; padding: 15px; background: #f9fbfd; display: flex; flex-direction: column; gap: 12px; }
+        .message { padding: 10px 14px; border-radius: 10px; max-width: 80%; line-height: 1.5; font-size: 14px; word-wrap: break-word; }
+        .user-msg { background: #0084ff; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .ai-msg { background: #e4e6eb; color: #050505; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .input-group { display: flex; padding: 10px; background: white; border-top: 1px solid #ddd; gap: 10px; }
+        input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; }
+        input[type="text"]:focus { border-color: #0084ff; }
+        button { padding: 12px 20px; background: #0084ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #006dd3; }
+        .loading { font-style: italic; color: gray; }
     </style>
 </head>
 <body>
 
-    <canvas id="matrix-rain"></canvas>
-
-    <div id="canvas-container"></div>
-
-    <div class="main-wrapper">
-        <header>
-            <div class="logo-area">
-                <div class="logo-icon">💻⚡</div>
-                <div class="site-title">CYBER_NET // SYSTEM CORE</div>
-            </div>
-            <div class="system-status">SECURE PROTOCOL: ACTIVE</div>
-        </header>
-
-        <div class="content-body">
-            <div class="left-info">
-                <h3>[SYSTEM LOGS]</h3>
-                <p>> Global network encryption: 100%<br>> AI Neural Link: ONLINE<br>> Target tracking: SECURED<br>> Live message stream verified.</p>
-            </div>
-
-            <div class="chat-container">
-                <div class="chat-header">
-                    <span>[AI_TERMINAL v4.1]</span>
-                    <span>🟢 LIVE</span>
-                </div>
-                <div class="chat-messages" id="chatMessages">
-                    <div class="message incoming">පද්ධතිය සක්‍රීයයි! දැන් ඔබට ඕනෑම පණිවිඩයක් මෙහි ටයිප් කර යැවිය හැක.</div>
-                </div>
-                <div class="chat-input-area">
-                    <input type="text" id="userInput" placeholder="පණිවිඩයක් ටයිප් කරන්න..." autocomplete="off">
-                    <button type="button" id="sendBtn">SEND</button>
-                </div>
-            </div>
-        </div>
+<div class="chat-container">
+    <div class="chat-header">💬 AI යාළුවා සමඟ කතා කරන්න</div>
+    <div id="chat-box">
+        <div class="message ai-msg">ආයුබෝවන්! මම ඔයාගේ කතාබහට සෙට් වෙන AI එක. කියන්න බලන්න, අද මොකක් ගැනද කතා කරමු? හොඳ නරක දෙකම අපි කිරලා බලමු!</div>
     </div>
+    <div class="input-group">
+        <input type="text" id="user-input" placeholder="මෙහි යමක් ලියන්න..." onkeydown="if(event.key === 'Enter') sendMessage()">
+        <button onclick="sendMessage()">යවන්න</button>
+    </div>
+</div>
 
-    <script>
-        // 1. පසුබිම් Matrix Code Rain ඇනිමේෂන් එක
-        const canvas = document.getElementById('matrix-rain');
-        const ctx = canvas.getContext('2d');
+<!-- Google Gen AI SDK එක සම්බන්ධ කිරීම -->
+<script type="importmap">
+  {
+    "imports": {
+      "@google/genai": "https://esm.run/@google/genai"
+    }
+  }
+</script>
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+<script type="module">
+    import { GoogleGenAI } from "@google/genai";
 
-        const alphabet = '0101010101ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#@$%&*';
-        const fontSize = 14;
-        const columns = canvas.width / fontSize;
-        const rainDrops = [];
+    // ඔබ දුන් API Key එක මෙහි නිවැරදිව ඇතුළත් කර ඇත
+    const ai = new GoogleGenAI({ apiKey: "AQ.Ab8RN6KtRpeqpr4J6APo2FAhFc5u1O3cBLIw8yHipVfSpcgj3Q" });
 
-        for (let x = 0; x < columns; x++) {
-            rainDrops[x] = 1;
-        }
+    window.sendMessage = async function() {
+        const inputField = document.getElementById("user-input");
+        const chatBox = document.getElementById("chat-box");
+        const userText = inputField.value.trim();
 
-        function drawMatrixRain() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (!userText) return;
 
-            ctx.fillStyle = '#00FF66';
-            ctx.font = fontSize + 'px monospace';
+        // පරිශීලක පණිවිඩය එකතු කිරීම
+        chatBox.innerHTML += `<div class="message user-msg">${userText}</div>`;
+        inputField.value = "";
+        chatBox.scrollTop = chatBox.scrollHeight;
 
-            for (let i = 0; i < rainDrops.length; i++) {
-                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
-                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+        // ලෝඩින් මැසේජ් එකක් පෙන්වීම
+        const loadingId = "loading-" + Date.now();
+        chatBox.innerHTML += `<div id="${loadingId}" class="message ai-msg loading">කල්පනා කරමින් ඉන්නවා...</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
 
-                if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    rainDrops[i] = 0;
-                }
-                rainDrops[i]++;
-            }
-        }
-        setInterval(drawMatrixRain, 30);
-
-        // 2. Three.js ත්‍රිමාණ ලෝක ගෝලය සැකසීම
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 300;
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
-
-        const Globe = new ThreeGlobe()
-            .globeImageUrl(null)
-            .showAtmosphere(true)
-            .atmosphereColor('#00FF66')
-            .atmosphereAltitude(0.2);
-
-        Globe.material().color = new THREE.Color(0x000200);
-        Globe.material().emissive = new THREE.Color(0x001a00);
-        Globe.material().emissiveIntensity = 0.6;
-
-        scene.add(Globe);
-
-        // රටවල් සහ දේශසීමා කොළ පාටින් ලෝඩ් කිරීම
-        fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
-            .then(res => res.json())
-            .then(countries => {
-                Globe
-                    .polygonsData(countries.features)
-                    .polygonCapColor(() => 'rgba(0, 20, 5, 0.9)')
-                    .polygonSideColor(() => 'rgba(0, 255, 102, 0.2)')
-                    .polygonStrokeColor(() => '#00FF66');
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: userText,
+                config: {
+                    systemInstruction: "ඔයා පරිගණක වැඩසටහනක් හෝ රොබෝ කෙනෙක් නෙවෙයි, මනුෂ්‍යයෙක් (Human) වගේ හිතලා කතා කරන කෙනෙක්. අපේ බසින් (උදාහරණයක් ලෙස සිංහලෙන්) බොහොම ස්වභාවිකව, යාළුවෙක් එක්ක කතා කරනවා වගේ කතා කරන්න. යම් දෙයක් හොඳ නම් ඒකේ තියෙන හොඳ පැත්තත්, නරක නම් ඒකේ තියෙන අඩුපාඩු සහ අවදානම් කිසිදු පැකිලීමකින් තොරව නරක විදිහටත් (මධ්‍යස්ථව සහ සාධාරණව) කෙළින් පැහැදිලි කරලා දෙන්න. පොතේ ගුරු ක්‍රමයට නැතුව ජීවිතයට එකඟ වන විදිහට සාමාන්‍ය බසින් උත්තර දෙන්න.",
+                },
             });
 
-        const ambientLight = new THREE.AmbientLight(0x00FF66, 3);
-        scene.add(ambientLight);
+            // ලෝඩින් මැසේජ් එක අයින් කරලා AI උත්තරය දැමීම
+            document.getElementById(loadingId).remove();
+            const aiText = response.text;
+            chatBox.innerHTML += `<div class="message ai-msg">${aiText}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
 
-        function animateGlobe() {
-            requestAnimationFrame(animateGlobe);
-            Globe.rotation.y += 0.003;
-            renderer.render(scene, camera);
+        } catch (error) {
+            console.error("දෝෂයක් සිදු විය:", error);
+            document.getElementById(loadingId).remove();
+            chatBox.innerHTML += `<div class="message ai-msg" style="color:red;">අයියෝ, පොඩි දෝෂයක් වුණා. ආයෙ ට්‍රයි එකක් දීලා බලමුද?</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
-        animateGlobe();
+    }
+</script>
 
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // 3. නිවැරදි කළ AI Chat Box පණිවිඩ යැවීමේ ක්‍රියාවලිය
-        const chatMessages = document.getElementById('chatMessages');
-        const userInput = document.getElementById('userInput');
-        const sendBtn = document.getElementById('sendBtn');
-
-        // බට්න් එක ක්ලික් කළ විට පණිවිඩය යැවීම
-        sendBtn.addEventListener('click', handleUserMessage);
-
-        // Enter ඔබ වැටුණු විට පණිවිඩය යැවීම
-        userInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                handleUserMessage();
-            }
-        });
-
-        function handleUserMessage() {
-            const text = userInput.value.trim();
-            if (text === "") return;
-
-            // පරිශීලකයා යැවූ මැසේජ් එක චැට් එකට එකතු කිරීම
-            appendMessage(text, 'outgoing');
-            userInput.value = "";
-
-            // AI පිළිතුර ක්ෂණිකව ලබා දීම
-            setTimeout(() => {
-                const reply = getAIResponse(text);
-                appendMessage(reply, 'incoming');
-            }, 500);
-        }
-
-        function appendMessage(text, type) {
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('message', type);
-            msgDiv.innerText = text;
-            chatMessages.appendChild(msgDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function getAIResponse(input) {
-            const lower = input.toLowerCase();
-            if (lower.includes('hello') || lower.includes('hi') || lower.includes('හෙලෝ')) {
-                return "ආයුබෝවන්! පණිවිඩය සාර්ථකව ලැබුණි. මම ඔබගේ විධානය ක්‍රියාත්මක කිරීමට සූදානම්.";
-            } else if (lower.includes('status') || lower.includes('තත්ත්වය')) {
-                return "පද්ධතිය ක්‍රියාත්මකයි. සියලුම චැට් ප්‍රොටෝකෝල සක්‍රීය කර ඇත.";
-            } else {
-                return `ලැබුණු පණිවිඩය: "${input}". AI පද්ධතිය එය තහවුරු කර ගත්තා!`;
-            }
-        }
-    </script>
 </body>
 </html>
