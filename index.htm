@@ -3,95 +3,304 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>මගේ AI යාළුවා - Live Chat</title>
+    <title>Joylix</title>
+    <!-- අයිකන් සඳහා (Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f5; margin: 0; padding: 10px; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .chat-container { width: 100%; max-width: 600px; height: 90vh; background: white; display: flex; flex-direction: column; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
-        .chat-header { background: #0084ff; color: white; padding: 15px; text-align: center; font-size: 18px; font-weight: bold; }
-        #chat-box { flex: 1; overflow-y: scroll; padding: 15px; background: #f9fbfd; display: flex; flex-direction: column; gap: 12px; }
-        .message { padding: 10px 14px; border-radius: 10px; max-width: 80%; line-height: 1.5; font-size: 14px; word-wrap: break-word; }
-        .user-msg { background: #0084ff; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .ai-msg { background: #e4e6eb; color: #050505; align-self: flex-start; border-bottom-left-radius: 2px; }
-        .input-group { display: flex; padding: 10px; background: white; border-top: 1px solid #ddd; gap: 10px; }
-        input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; }
-        input[type="text"]:focus { border-color: #0084ff; }
-        button { padding: 12px 20px; background: #0084ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #006dd3; }
-        .loading { font-style: italic; color: gray; }
+        /* වර්ණ සහ මූලික සැකසුම් */
+        :root {
+            --bg-color: #000000; /* කළු පසුබිම */
+            --pink-color: #d81b60; /* තද රෝස */
+            --white-color: #ffffff; /* සුදු */
+            --gray-color: #222222; /* අළු පාට කොටස් සඳහා */
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            color: var(--white-color);
+            font-family: Arial, sans-serif;
+        }
+
+        /* 18+ වයස් සීමාව පරීක්ෂා කරන කොටස (Age Verification) */
+        #age-gate {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.98);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+        }
+        .age-box {
+            background-color: var(--gray-color); padding: 30px;
+            border-radius: 10px; text-align: center; max-width: 500px;
+            border: 2px solid var(--pink-color); margin: 20px;
+        }
+        .age-box p { font-size: 14px; line-height: 1.6; color: #ccc; }
+        
+        /* බටන් වල සැකසුම (තද රෝස පසුබිම, සුදු අකුරු) */
+        .btn {
+            background-color: var(--pink-color); color: var(--white-color);
+            border: none; padding: 10px 20px; margin: 10px;
+            border-radius: 5px; cursor: pointer; font-weight: bold;
+        }
+        
+        /* ශීර්ෂය (Header) */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; background-color: var(--gray-color);
+            border-bottom: 2px solid var(--pink-color);
+        }
+        .header-left, .header-right { display: flex; align-items: center; gap: 15px; }
+        .menu-icon { font-size: 24px; cursor: pointer; color: var(--white-color); }
+        
+        /* Joylix ලෝගෝව (වටකුරු තද රෝස කොටුවේ සුදු අකුරු) */
+        .logo {
+            background-color: var(--pink-color); color: var(--white-color);
+            padding: 5px 15px; border-radius: 12px; font-weight: bold; font-size: 22px;
+        }
+        .header-right i { font-size: 20px; cursor: pointer; color: var(--white-color); }
+        .profile-avatar {
+            width: 35px; height: 35px; background-color: #555;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+
+        /* වම් පස මෙනුව (Sidebar Menu) */
+        #sidebar {
+            position: fixed; top: 0; left: -250px; width: 200px; height: 100%;
+            background-color: var(--gray-color); transition: 0.3s;
+            padding-top: 60px; z-index: 1000; border-right: 2px solid var(--pink-color);
+        }
+        #sidebar a {
+            display: block; color: var(--white-color); padding: 15px 20px;
+            text-decoration: none; font-size: 18px;
+        }
+        #sidebar a:hover { background-color: var(--pink-color); }
+        .close-btn { position: absolute; top: 10px; right: 20px; font-size: 30px; cursor: pointer; }
+
+        /* පිටු මාරු වීම (Pages Container) */
+        .container { padding: 20px; display: none; }
+        .active-page { display: block; }
+
+        /* Home Page - පරිශීලක ලැයිස්තුව */
+        .users-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px; margin-top: 20px;
+        }
+        .user-card {
+            background-color: var(--gray-color); padding: 15px;
+            border-radius: 10px; text-align: center; cursor: pointer;
+            border: 1px solid #444; transition: 0.3s;
+        }
+        .user-card:hover { border-color: var(--pink-color); }
+        .user-card img {
+            width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px;
+        }
+
+        /* Profile Page */
+        .profile-header { text-align: center; margin-bottom: 20px; position: relative; }
+        .profile-header img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; }
+        
+        /* තිත් තුනේ මෙනුව (Report සඳහා) */
+        .options-menu { position: absolute; top: 0; right: 10px; font-size: 24px; cursor: pointer; }
+        
+        /* WhatsApp Button */
+        .whatsapp-btn {
+            background-color: #25D366; color: white; padding: 10px 20px;
+            border-radius: 5px; text-decoration: none; display: inline-block;
+            margin-top: 10px; font-weight: bold;
+        }
+        
+        /* තරු 5 රේටිං */
+        .stars { color: gold; font-size: 24px; margin: 15px 0; }
+
+        /* Report Modal එක */
+        #report-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000;
+        }
+        .report-box { background-color: var(--gray-color); padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; border: 1px solid var(--pink-color); }
+        
+        /* ෆෝම් කොටස් (Inputs & Textareas) */
+        input, textarea {
+            width: 100%; padding: 10px; margin-bottom: 15px;
+            background-color: #333; color: white; border: 1px solid #555;
+            border-radius: 5px; box-sizing: border-box; font-family: inherit;
+        }
+        textarea { height: 80px; resize: none; }
     </style>
 </head>
 <body>
 
-<div class="chat-container">
-    <div class="chat-header">💬 AI යාළුවා සමඟ කතා කරන්න</div>
-    <div id="chat-box">
-        <div class="message ai-msg">ආයුබෝවන්! මම ඔයාගේ කතාබහට සෙට් වෙන AI එක. කියන්න බලන්න, අද මොකක් ගැනද කතා කරමු? හොඳ නරක දෙකම අපි කිරලා බලමු!</div>
+    <!-- Age Verification පිටුව -->
+    <div id="age-gate">
+        <div class="age-box">
+            <h2 style="color: var(--pink-color);">Age Verification</h2>
+            <p>The following digital space contains mature themes, sensitive material, and adult content that is strictly restricted to individuals who have reached the legal age of majority in their jurisdiction. If you are under the legal age or if viewing age-restricted material violates the laws of your country or region, please exit this platform immediately. By choosing to proceed or remain on this site, you formally acknowledge, certify, and take full personal responsibility that you are of legal age to view such content.</p>
+            <button class="btn" onclick="exitSite()" style="background:#555;">Exit (Under 18)</button>
+            <button class="btn" onclick="enterSite()">Proceed (18+)</button>
+        </div>
     </div>
-    <div class="input-group">
-        <input type="text" id="user-input" placeholder="මෙහි යමක් ලියන්න..." onkeydown="if(event.key === 'Enter') sendMessage()">
-        <button onclick="sendMessage()">යවන්න</button>
+
+    <!-- Header එක -->
+    <header id="main-header" style="display:none;">
+        <div class="header-left">
+            <!-- ඉරි තුනේ මෙනුව -->
+            <i class="fas fa-bars menu-icon" onclick="openSidebar()"></i>
+            <!-- ලෝගෝව -->
+            <div class="logo">Joylix</div>
+        </div>
+        <div class="header-right">
+            <!-- සර්ච් අයිකනය -->
+            <i class="fas fa-search" onclick="alert('Search feature will be added here')"></i>
+            <!-- ප්‍රොފައިල් අයිකනය -->
+            <div class="profile-avatar" onclick="showPage('home-page')">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- වම් පසින් එන මෙනුව (Sidebar) -->
+    <div id="sidebar">
+        <span class="close-btn" onclick="closeSidebar()">&times;</span>
+        <a href="#" onclick="showPage('register-page'); closeSidebar();"><i class="fas fa-user-plus"></i> Register</a>
+        <a href="#" onclick="showPage('home-page'); closeSidebar();"><i class="fas fa-home"></i> Home</a>
     </div>
-</div>
 
-<script>
-    window.sendMessage = async function() {
-        const inputField = document.getElementById("user-input");
-        const chatBox = document.getElementById("chat-box");
-        const userText = inputField.value.trim();
+    <!-- Home Page (මිනිස්සුන්ගේ ප්‍රොފައިල් පෙන්වන තැන) -->
+    <div id="home-page" class="container">
+        <h2>Members</h2>
+        <div class="users-grid">
+            <!-- උදාහරණයක් විදිහට එකතු කරපු කෙනෙක් -->
+            <div class="user-card" onclick="showPage('profile-page')">
+                <img src="https://via.placeholder.com/80/d81b60/ffffff?text=User" alt="User">
+                <h3>Kasun Perera</h3>
+            </div>
+        </div>
+    </div>
 
-        if (!userText) return;
+    <!-- Register Page -->
+    <div id="register-page" class="container">
+        <h2 style="color:var(--pink-color);">Register</h2>
+        
+        <label>Profile Photo</label>
+        <input type="file" accept="image/*">
+        
+        <label>Name (අනිවාර්යයි)</label>
+        <input type="text" placeholder="Enter your name" required>
+        
+        <label>WhatsApp Number</label>
+        <input type="text" placeholder="e.g. +9477XXXXXXX">
+        
+        <!-- වෙනත් අංක එකතු කරන තැන -->
+        <div id="extra-numbers"></div>
+        <button class="btn" style="padding:5px 10px; font-size:12px; margin-top:0;" onclick="addNumberField()">+ තවත් අංකයක් එකතු කරන්න (Add Number)</button>
+        <br><br>
 
-        // පරිශීලක පණිවිඩය එකතු කිරීම
-        chatBox.innerHTML += `<div class="message user-msg">${userText}</div>`;
-        inputField.value = "";
-        chatBox.scrollTop = chatBox.scrollHeight;
+        <label>Telegram Number</label>
+        <input type="text" placeholder="Telegram number">
+        
+        <label>Address (කැමති නම්)</label>
+        <input type="text" placeholder="Enter your address">
+        
+        <label>Bio (ඔබ ගැන විස්තර / කුඩාද යන්න)</label>
+        <textarea placeholder="Write about yourself..."></textarea>
+        
+        <button class="btn" style="width:100%" onclick="alert('Profile Saved!'); showPage('home-page');">Create Profile</button>
+    </div>
 
-        // ලෝඩින් මැසේජ් එකක් පෙන්වීම
-        const loadingId = "loading-" + Date.now();
-        chatBox.innerHTML += `<div id="${loadingId}" class="message ai-msg loading">කල්පනා කරමින් ඉන්නවා...</div>`;
-        chatBox.scrollTop = chatBox.scrollHeight;
+    <!-- User Profile Page (කෙනෙක්ගේ විස්තර පෙන්වන තැන) -->
+    <div id="profile-page" class="container">
+        <div class="profile-header">
+            <!-- තිත් තුනේ මෙනුව (Report කිරීමට) -->
+            <i class="fas fa-ellipsis-v options-menu" onclick="document.getElementById('report-modal').style.display='flex'"></i>
+            
+            <img src="https://via.placeholder.com/120/d81b60/ffffff?text=User" alt="User">
+            <h2>Kasun Perera</h2>
+            <p>මෙය මගේ විස්තරයයි. මම කුඩා කෙනෙක්. (Bio)</p>
+            
+            <!-- Subscribe Button -->
+            <button class="btn" onclick="subscribe()">Subscribe (<span id="sub-count">10</span>)</button>
+            <br>
+            
+            <!-- WhatsApp Button (අංකය පෙන්වන්නේ නෑ, කෙළින්ම WhatsApp යනවා) -->
+            <a href="https://wa.me/94770000000" target="_blank" class="whatsapp-btn">
+                <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+            </a>
+            
+            <!-- Review Section -->
+            <div class="stars">
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+            </div>
+            <p>Leave a review (තරු 5 රේටිං සහ මැසේජ්)</p>
+            <textarea placeholder="Write a review..."></textarea>
+            <button class="btn" onclick="alert('Review Submitted!')">Submit Review</button>
+        </div>
+    </div>
 
-        // නිවැරදි කළ API Key එක මෙහි ඇතුළත් කර ඇත
-        const apiKey = "AIzaSyAs8C18Zgn7UiHKRVgjztpJ8WJ-MCqoaQ";
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    <!-- Report කරන කොටුව (Popup Modal) -->
+    <div id="report-modal">
+        <div class="report-box">
+            <h3 style="color:var(--pink-color); margin-top:0;">Report Account</h3>
+            <p style="font-size: 14px; color: #ccc;">කරුණාකර Report කිරීමට හේතුව ටයිප් කරන්න. මෙය Admin වෙත යැවේ.</p>
+            <textarea id="report-reason" placeholder="හේතුව මෙහි ලියන්න..."></textarea>
+            <div style="display:flex; justify-content:space-between; margin-top:10px;">
+                <button class="btn" style="background:#555;" onclick="document.getElementById('report-modal').style.display='none'">Cancel</button>
+                <button class="btn" onclick="submitReport()">Send Report</button>
+            </div>
+        </div>
+    </div>
 
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: userText }]
-                    }],
-                    systemInstruction: {
-                        parts: [{ text: "ඔයා පරිගණක වැඩසටහනක් හෝ රොබෝ කෙනෙක් නෙවෙයි, මනුෂ්‍යයෙක් (Human) වගේ හිතලා කතා කරන කෙනෙක්. අපේ බසින් බොහොම ස්වභාවිකව, යාළුවෙක් එක්ක කතා කරනවා වගේ කතා කරන්න. යම් දෙයක් හොඳ නම් ඒකේ තියෙන හොඳ පැත්තත්, නරක නම් ඒකේ තියෙන අඩුපාඩු සහ අවදානම් කිසිදු පැකිලීමකින් තොරව නරක විදිහටත් (මධ්‍යස්ථව සහ සාධාරණව) කෙළින් පැහැදිලි කරලා දෙන්න." }]
-                    }
-                })
-            });
-
-            const data = await response.json();
-            document.getElementById(loadingId).remove();
-
-            if (data.candidates && data.candidates[0].content.parts[0].text) {
-                const aiText = data.candidates[0].content.parts[0].text;
-                chatBox.innerHTML += `<div class="message ai-msg">${aiText}</div>`;
-            } else {
-                console.error("API Response Data:", data);
-                chatBox.innerHTML += `<div class="message ai-msg" style="color:red;">මොකක් හරි දෝෂයක් සිදු විය. (API Error)</div>`;
-            }
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-        } catch (error) {
-            console.error("දෝෂයක් සිදු විය:", error);
-            document.getElementById(loadingId).remove();
-            chatBox.innerHTML += `<div class="message ai-msg" style="color:red;">අයියෝ, සම්බන්ධ වීමේ දෝෂයක් වුණා.</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
+    <!-- JavaScript - ක්‍රියාකාරීත්වය සඳහා -->
+    <script>
+        // Age Verification ක්‍රියාව
+        function exitSite() {
+            window.location.href = "https://www.google.com"; // 18ට අඩු නම් ඉවත් වේ
         }
-    }
-</script>
+        function enterSite() {
+            document.getElementById('age-gate').style.display = 'none';
+            document.getElementById('main-header').style.display = 'flex';
+            showPage('home-page'); // 18ට වැඩි නම් Home page එකට යයි
+        }
 
+        // පිටු මාරු කිරීමේ ක්‍රියාව
+        function showPage(pageId) {
+            let pages = document.querySelectorAll('.container');
+            pages.forEach(page => page.classList.remove('active-page'));
+            document.getElementById(pageId).classList.add('active-page');
+        }
+
+        // මෙනුව ඇරීම සහ වැසීම
+        function openSidebar() { document.getElementById("sidebar").style.left = "0"; }
+        function closeSidebar() { document.getElementById("sidebar").style.left = "-250px"; }
+
+        // තවත් දුරකථන අංක එකතු කිරීම (Add Extra Numbers)
+        function addNumberField() {
+            let extraDiv = document.getElementById('extra-numbers');
+            let input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'වෙනත් අංකය (Other Number)';
+            extraDiv.appendChild(input);
+        }
+
+        // Subscribe කිරීම (Live ගණන් වැඩිවීම)
+        let count = 10;
+        function subscribe() {
+            count++;
+            document.getElementById('sub-count').innerText = count;
+        }
+
+        // Report යැවීම
+        function submitReport() {
+            let reason = document.getElementById('report-reason').value;
+            if(reason.trim() === "") {
+                alert("කරුණාකර හේතුව ඇතුළත් කරන්න.");
+                return;
+            }
+            // Admin ට මැසේජ් යන ආකාරය නිරූපණය
+            alert("Report සාර්ථකව Admin වෙත යවන ලදී!\n\nහේතුව: " + reason + "\nProfile Link: https://joylix.com/user/kasun-perera\n\n(රිපෝට් 7ක් පැමිණි පසු මෙම ගිණුම ඉවත් වේ)");
+            document.getElementById('report-modal').style.display = 'none';
+            document.getElementById('report-reason').value = '';
+        }
+    </script>
 </body>
 </html>
