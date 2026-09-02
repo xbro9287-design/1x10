@@ -1,306 +1,613 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joylix</title>
-    <!-- අයිකන් සඳහා (Icons) -->
+    <title>Joylix - Premium Platform</title>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* වර්ණ සහ මූලික සැකසුම් */
         :root {
-            --bg-color: #000000; /* කළු පසුබිම */
-            --pink-color: #d81b60; /* තද රෝස */
-            --white-color: #ffffff; /* සුදු */
-            --gray-color: #222222; /* අළු පාට කොටස් සඳහා */
+            --bg-color: #0d0d0d;
+            --card-bg: #1a1a1a;
+            --accent-pink: #ff1493;
+            --accent-hover: #c71585;
+            --text-color: #ffffff;
+            --text-sub: #b0b0b0;
+            --border-color: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none; /* Prevents text selection for basic security */
         }
 
         body {
-            margin: 0; padding: 0;
             background-color: var(--bg-color);
-            color: var(--white-color);
-            font-family: Arial, sans-serif;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
         }
 
-        /* 18+ වයස් සීමාව පරීක්ෂා කරන කොටස (Age Verification) */
-        #age-gate {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.98);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 9999;
+        /* Mobile Container Layout */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background-color: #000000;
+            min-height: 100vh;
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            position: relative;
+            padding-bottom: 70px;
         }
-        .age-box {
-            background-color: var(--gray-color); padding: 30px;
-            border-radius: 10px; text-align: center; max-width: 500px;
-            border: 2px solid var(--pink-color); margin: 20px;
-        }
-        .age-box p { font-size: 14px; line-height: 1.6; color: #ccc; }
-        
-        /* බටන් වල සැකසුම (තද රෝස පසුබිම, සුදු අකුරු) */
-        .btn {
-            background-color: var(--pink-color); color: var(--white-color);
-            border: none; padding: 10px 20px; margin: 10px;
-            border-radius: 5px; cursor: pointer; font-weight: bold;
-        }
-        
-        /* ශීර්ෂය (Header) */
+
+        /* Header UI */
         header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 20px; background-color: var(--gray-color);
-            border-bottom: 2px solid var(--pink-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: rgba(13, 13, 13, 0.95);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
         }
-        .header-left, .header-right { display: flex; align-items: center; gap: 15px; }
-        .menu-icon { font-size: 24px; cursor: pointer; color: var(--white-color); }
-        
-        /* Joylix ලෝගෝව (වටකුරු තද රෝස කොටුවේ සුදු අකුරු) */
+
         .logo {
-            background-color: var(--pink-color); color: var(--white-color);
-            padding: 5px 15px; border-radius: 12px; font-weight: bold; font-size: 22px;
+            background-color: var(--accent-pink);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
         }
-        .header-right i { font-size: 20px; cursor: pointer; color: var(--white-color); }
-        .profile-avatar {
-            width: 35px; height: 35px; background-color: #555;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
             cursor: pointer;
         }
 
-        /* වම් පස මෙනුව (Sidebar Menu) */
-        #sidebar {
-            position: fixed; top: 0; left: -250px; width: 200px; height: 100%;
-            background-color: var(--gray-color); transition: 0.3s;
-            padding-top: 60px; z-index: 1000; border-right: 2px solid var(--pink-color);
-        }
-        #sidebar a {
-            display: block; color: var(--white-color); padding: 15px 20px;
-            text-decoration: none; font-size: 18px;
-        }
-        #sidebar a:hover { background-color: var(--pink-color); }
-        .close-btn { position: absolute; top: 10px; right: 20px; font-size: 30px; cursor: pointer; }
-
-        /* පිටු මාරු වීම (Pages Container) */
-        .container { padding: 20px; display: none; }
-        .active-page { display: block; }
-
-        /* Home Page - පරිශීලක ලැයිස්තුව */
-        .users-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 20px; margin-top: 20px;
-        }
-        .user-card {
-            background-color: var(--gray-color); padding: 15px;
-            border-radius: 10px; text-align: center; cursor: pointer;
-            border: 1px solid #444; transition: 0.3s;
-        }
-        .user-card:hover { border-color: var(--pink-color); }
-        .user-card img {
-            width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px;
+        /* Nav Drawer Menu */
+        .nav-menu {
+            position: fixed;
+            top: 0; right: -100%;
+            width: 250px; height: 100%;
+            background-color: var(--card-bg);
+            z-index: 200;
+            transition: 0.3s ease-in-out;
+            padding: 20px;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
         }
 
-        /* Profile Page */
-        .profile-header { text-align: center; margin-bottom: 20px; position: relative; }
-        .profile-header img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; }
-        
-        /* තිත් තුනේ මෙනුව (Report සඳහා) */
-        .options-menu { position: absolute; top: 0; right: 10px; font-size: 24px; cursor: pointer; }
-        
-        /* WhatsApp Button */
-        .whatsapp-btn {
-            background-color: #25D366; color: white; padding: 10px 20px;
-            border-radius: 5px; text-decoration: none; display: inline-block;
-            margin-top: 10px; font-weight: bold;
+        .nav-menu.active { right: 0; }
+        .nav-menu ul { list-style: none; margin-top: 30px; }
+        .nav-menu li { margin-bottom: 20px; }
+        .nav-menu a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
-        /* තරු 5 රේටිං */
-        .stars { color: gold; font-size: 24px; margin: 15px 0; }
 
-        /* Report Modal එක */
-        #report-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000;
+        /* Age Gate Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.92);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
-        .report-box { background-color: var(--gray-color); padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; border: 1px solid var(--pink-color); }
+
+        .modal-box {
+            background-color: var(--card-bg);
+            border: 1px solid var(--accent-pink);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            max-width: 380px;
+        }
+
+        .modal-box h2 { color: var(--accent-pink); margin-bottom: 12px; }
+        .modal-box p { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 20px; line-height: 1.4; }
+
+        .btn-group { display: flex; gap: 10px; }
         
-        /* ෆෝම් කොටස් (Inputs & Textareas) */
-        input, textarea {
-            width: 100%; padding: 10px; margin-bottom: 15px;
-            background-color: #333; color: white; border: 1px solid #555;
-            border-radius: 5px; box-sizing: border-box; font-family: inherit;
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
         }
-        textarea { height: 80px; resize: none; }
+
+        .btn-primary { background-color: var(--accent-pink); color: white; }
+        .btn-primary:hover { background-color: var(--accent-hover); }
+        .btn-secondary { background-color: #333; color: white; }
+
+        /* Highlighted Banner for Logged-In Users */
+        .rewards-banner {
+            background: linear-gradient(135deg, #ff1493 0%, #4b0082 100%);
+            margin: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 10px rgba(255, 20, 147, 0.3);
+        }
+
+        .rewards-banner i { font-size: 1.8rem; color: #ffd700; }
+        .rewards-banner h4 { font-size: 0.95rem; margin-bottom: 2px; }
+        .rewards-banner p { font-size: 0.75rem; opacity: 0.9; }
+
+        /* Compact Profile Component */
+        .profile-card {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-pink);
+            object-fit: cover;
+        }
+
+        .profile-info { flex: 1; }
+
+        .profile-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .profile-name { font-size: 1.1rem; font-weight: bold; }
+        
+        .country-flag {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .sub-count {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            margin: 4px 0 8px 0;
+        }
+
+        .action-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+        }
+
+        .copy-btn {
+            background-color: #262626;
+            color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* 3-Dot Menu Dropdown */
+        .menu-container { position: absolute; top: 0; right: 0; }
+        .dropdown-menu {
+            position: absolute;
+            right: 0; top: 25px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: none;
+            width: 120px;
+            z-index: 50;
+        }
+        .dropdown-menu button {
+            width: 100%;
+            padding: 8px;
+            background: none;
+            border: none;
+            color: #ff4d4d;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Conditional Audio Player Component */
+        .audio-container {
+            margin-top: 14px;
+            background-color: #141414;
+            padding: 8px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #282828;
+        }
+
+        .audio-container audio { height: 30px; width: 100%; }
+
+        /* Details & Gallery */
+        .pricing-section {
+            margin-top: 12px;
+            background-color: #141414;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .gallery-grid img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        /* Private Settings View (Owner Only) */
+        .private-settings {
+            margin: 12px;
+            padding: 14px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            border: 1px dashed var(--accent-pink);
+        }
+
+        .private-settings h3 {
+            font-size: 0.9rem;
+            color: var(--accent-pink);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .progress-bar-bg {
+            background-color: #333;
+            height: 8px;
+            border-radius: 4px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background-color: var(--accent-pink);
+            height: 100%;
+            width: 12%; /* Example progress */
+        }
+
+        /* Register Form View */
+        .form-view {
+            padding: 16px;
+            display: none;
+        }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.8rem; margin-bottom: 4px; color: var(--text-sub); }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            background-color: #141414;
+            border: 1px solid var(--border-color);
+            color: #fff;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Age Verification පිටුව -->
-    <div id="age-gate">
-        <div class="age-box">
-            <h2 style="color: var(--pink-color);">Age Verification</h2>
-            <p>The following digital space contains mature themes, sensitive material, and adult content that is strictly restricted to individuals who have reached the legal age of majority in their jurisdiction. If you are under the legal age or if viewing age-restricted material violates the laws of your country or region, please exit this platform immediately. By choosing to proceed or remain on this site, you formally acknowledge, certify, and take full personal responsibility that you are of legal age to view such content.</p>
-            <button class="btn" onclick="exitSite()" style="background:#555;">Exit (Under 18)</button>
-            <button class="btn" onclick="enterSite()">Proceed (18+)</button>
-        </div>
-    </div>
-
-    <!-- Header එක -->
-    <header id="main-header" style="display:none;">
-        <div class="header-left">
-            <!-- ඉරි තුනේ මෙනුව -->
-            <i class="fas fa-bars menu-icon" onclick="openSidebar()"></i>
-            <!-- ලෝගෝව -->
-            <div class="logo">Joylix</div>
-        </div>
-        <div class="header-right">
-            <!-- සර්ච් අයිකනය -->
-            <i class="fas fa-search" onclick="alert('Search feature will be added here')"></i>
-            <!-- ප්‍රොފައިල් අයිකනය -->
-            <div class="profile-avatar" onclick="showPage('home-page')">
-                <i class="fas fa-user"></i>
-            </div>
+<div class="app-container">
+    <!-- Header -->
+    <header>
+        <div class="logo">Joylix</div>
+        <div class="header-actions">
+            <button class="icon-btn"><i class="fas fa-search"></i></button>
+            <button class="icon-btn" onclick="toggleNav()"><i class="fas fa-bars"></i></button>
         </div>
     </header>
 
-    <!-- වම් පසින් එන මෙනුව (Sidebar) -->
-    <div id="sidebar">
-        <span class="close-btn" onclick="closeSidebar()">&times;</span>
-        <a href="#" onclick="showPage('register-page'); closeSidebar();"><i class="fas fa-user-plus"></i> Register</a>
-        <a href="#" onclick="showPage('home-page'); closeSidebar();"><i class="fas fa-home"></i> Home</a>
-    </div>
+    <!-- Navigation Drawer -->
+    <nav class="nav-menu" id="navMenu">
+        <button class="icon-btn" onclick="toggleNav()" style="float: right;"><i class="fas fa-times"></i></button>
+        <ul>
+            <li><a href="#" onclick="showHome()"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="#" onclick="showRegister()"><i class="fas fa-user-plus"></i> Register Profile</a></li>
+            <li><a href="#" onclick="toggleSettings()"><i class="fas fa-cog"></i> Private Settings</a></li>
+        </ul>
+    </nav>
 
-    <!-- Home Page (මිනිස්සුන්ගේ ප්‍රොފައިල් පෙන්වන තැන) -->
-    <div id="home-page" class="container">
-        <h2>Members</h2>
-        <div class="users-grid">
-            <!-- උදාහරණයක් විදිහට එකතු කරපු කෙනෙක් -->
-            <div class="user-card" onclick="showPage('profile-page')">
-                <img src="https://via.placeholder.com/80/d81b60/ffffff?text=User" alt="User">
-                <h3>Kasun Perera</h3>
+    <!-- 18+ Mandatory Age Gate Modal -->
+    <div class="modal-overlay" id="ageGate">
+        <div class="modal-box">
+            <h2><i class="fas fa-exclamation-triangle"></i> 18+ Adult Content</h2>
+            <p>මෙම වෙබ් අඩවිය වැඩිහිටියන් සඳහා පමණි. ඉදිරියට යාමට ඔබ අවුරුදු 18ට වැඩි අයෙකු බව තහවුරු කරන්න.</p>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="exitSite()">මම 18ට අඩුයි (Exit)</button>
+                <button class="btn btn-primary" onclick="acceptAge()">මම 18ට වැඩියි (Enter)</button>
             </div>
         </div>
     </div>
 
-    <!-- Register Page -->
-    <div id="register-page" class="container">
-        <h2 style="color:var(--pink-color);">Register</h2>
-        
-        <label>Profile Photo</label>
-        <input type="file" accept="image/*">
-        
-        <label>Name (අනිවාර්යයි)</label>
-        <input type="text" placeholder="Enter your name" required>
-        
-        <label>WhatsApp Number</label>
-        <input type="text" placeholder="e.g. +9477XXXXXXX">
-        
-        <!-- වෙනත් අංක එකතු කරන තැන -->
-        <div id="extra-numbers"></div>
-        <button class="btn" style="padding:5px 10px; font-size:12px; margin-top:0;" onclick="addNumberField()">+ තවත් අංකයක් එකතු කරන්න (Add Number)</button>
-        <br><br>
-
-        <label>Telegram Number</label>
-        <input type="text" placeholder="Telegram number">
-        
-        <label>Address (කැමති නම්)</label>
-        <input type="text" placeholder="Enter your address">
-        
-        <label>Bio (ඔබ ගැන විස්තර / කුඩාද යන්න)</label>
-        <textarea placeholder="Write about yourself..."></textarea>
-        
-        <button class="btn" style="width:100%" onclick="alert('Profile Saved!'); showPage('home-page');">Create Profile</button>
-    </div>
-
-    <!-- User Profile Page (කෙනෙක්ගේ විස්තර පෙන්වන තැන) -->
-    <div id="profile-page" class="container">
-        <div class="profile-header">
-            <!-- තිත් තුනේ මෙනුව (Report කිරීමට) -->
-            <i class="fas fa-ellipsis-v options-menu" onclick="document.getElementById('report-modal').style.display='flex'"></i>
-            
-            <img src="https://via.placeholder.com/120/d81b60/ffffff?text=User" alt="User">
-            <h2>Kasun Perera</h2>
-            <p>මෙය මගේ විස්තරයයි. මම කුඩා කෙනෙක්. (Bio)</p>
-            
-            <!-- Subscribe Button -->
-            <button class="btn" onclick="subscribe()">Subscribe (<span id="sub-count">10</span>)</button>
-            <br>
-            
-            <!-- WhatsApp Button (අංකය පෙන්වන්නේ නෑ, කෙළින්ම WhatsApp යනවා) -->
-            <a href="https://wa.me/94770000000" target="_blank" class="whatsapp-btn">
-                <i class="fab fa-whatsapp"></i> Chat on WhatsApp
-            </a>
-            
-            <!-- Review Section -->
-            <div class="stars">
-                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+    <!-- MAIN HOME VIEW (PROFILES) -->
+    <div id="homeView">
+        <!-- Exclusive Banner for Logged In Users -->
+        <div class="rewards-banner">
+            <i class="fas fa-gift"></i>
+            <div>
+                <h4>ලියාපදිංචි වන අලුත් අය සයිට් එකට එකතු කරන්න!</h4>
+                <p>ඔබගේ Link එකෙන් අය ලියාපදිංචි කරවා විශේෂ ත්‍යාග සහ Packages දිනාගන්න.</p>
             </div>
-            <p>Leave a review (තරු 5 රේටිං සහ මැසේජ්)</p>
-            <textarea placeholder="Write a review..."></textarea>
-            <button class="btn" onclick="alert('Review Submitted!')">Submit Review</button>
+        </div>
+
+        <!-- Sample Profile Card -->
+        <div class="profile-card">
+            <div class="profile-header">
+                <img src="https://via.placeholder.com/75" alt="Profile" class="profile-avatar">
+                <div class="profile-info">
+                    <div class="profile-name-row">
+                        <span class="profile-name">Sarah</span>
+                        <span class="country-flag"><i class="fas fa-globe-asia"></i> Sri Lanka</span>
+                    </div>
+                    <div class="sub-count" id="subCount">Subscribers: 1,240</div>
+                    
+                    <div class="action-row">
+                        <button class="btn btn-primary btn-sm" id="subBtn" onclick="toggleSubscribe()">Subscribe</button>
+                        <button class="copy-btn" onclick="copyProfileLink()" title="Copy Link"><i class="fas fa-link"></i></button>
+                        <a href="https://wa.me/1234567890" target="_blank" style="color:#25D366; font-size: 1.2rem; margin-left: auto;"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+
+                <!-- 3 Dot Report Menu -->
+                <div class="menu-container">
+                    <button class="icon-btn" onclick="toggleDropdown()"><i class="fas fa-ellipsis-v"></i></button>
+                    <div class="dropdown-menu" id="reportDropdown">
+                        <button onclick="openReportModal()"><i class="fas fa-flag"></i> Report</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conditional Voice Message Player (Shows ONLY if voice exists) -->
+            <div class="audio-container" id="voicePlayerContainer">
+                <i class="fas fa-microphone" style="color: var(--accent-pink);"></i>
+                <audio controls>
+                    <source src="sample-voice.mp3" type="audio/mpeg">
+                    Your browser does not support audio.
+                </audio>
+            </div>
+
+            <!-- Pricing Section -->
+            <div class="pricing-section">
+                <strong><i class="fas fa-tag"></i> Prices & Services:</strong>
+                <p style="color: var(--text-sub); margin-top: 4px;">Standard Call: LKR 5,000 | VIP Package: LKR 12,000</p>
+            </div>
+
+            <!-- Photos Gallery (Bottom) -->
+            <div class="gallery-grid">
+                <img src="https://via.placeholder.com/150" alt="Gallery 1">
+                <img src="https://via.placeholder.com/150" alt="Gallery 2">
+                <img src="https://via.placeholder.com/150" alt="Gallery 3">
+            </div>
+        </div>
+
+        <!-- Private Owner Settings Section (Hidden from Public) -->
+        <div class="private-settings" id="privateSettings" style="display: none;">
+            <h3><i class="fas fa-lock"></i> Account Owner Control Dashboard</h3>
+            
+            <p style="font-size: 0.8rem; color: #ff4d4d;"><strong>Account Status:</strong> Active (Reports: <span id="reportCount">2</span>/7)</p>
+            <small style="font-size: 0.7rem; color: var(--text-sub);">Report 7ක් වූ විට ස්වයංක්‍රීයව ගිණුම තහනම් වේ.</small>
+
+            <hr style="border-color: #333; margin: 10px 0;">
+
+            <p style="font-size: 0.8rem;"><strong>Monetization Milestone:</strong></p>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill"></div>
+            </div>
+            <small style="font-size: 0.75rem; color: var(--text-sub);">Subscribe 100,000 පිරුණු පසු මුදල් ගෙවීමේ ක්‍රමය (Payout System) සක්‍රීය වේ!</small>
         </div>
     </div>
 
-    <!-- Report කරන කොටුව (Popup Modal) -->
-    <div id="report-modal">
-        <div class="report-box">
-            <h3 style="color:var(--pink-color); margin-top:0;">Report Account</h3>
-            <p style="font-size: 14px; color: #ccc;">කරුණාකර Report කිරීමට හේතුව ටයිප් කරන්න. මෙය Admin වෙත යැවේ.</p>
-            <textarea id="report-reason" placeholder="හේතුව මෙහි ලියන්න..."></textarea>
-            <div style="display:flex; justify-content:space-between; margin-top:10px;">
-                <button class="btn" style="background:#555;" onclick="document.getElementById('report-modal').style.display='none'">Cancel</button>
-                <button class="btn" onclick="submitReport()">Send Report</button>
+    <!-- REGISTRATION FORM VIEW -->
+    <div id="registerView" class="form-view">
+        <h2 style="font-size: 1.1rem; color: var(--accent-pink); margin-bottom: 15px;">Register Profile</h2>
+        <form onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label>Profile Picture</label>
+                <input type="file" accept="image/*" required>
+            </div>
+            <div class="form-group">
+                <label>Name (Required)</label>
+                <input type="text" placeholder="Your Name" required>
+            </div>
+            <div class="form-group">
+                <label>Country</label>
+                <select required>
+                    <option value="Sri Lanka">Sri Lanka</option>
+                    <option value="India">India</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>WhatsApp Number</label>
+                <input type="tel" placeholder="+94..." required>
+            </div>
+            <div class="form-group">
+                <label>Telegram Number / Username</label>
+                <input type="text" placeholder="@username">
+            </div>
+            <div class="form-group">
+                <label>Prices & Services Details</label>
+                <textarea rows="2" placeholder="අය කරන මිල ගණන් සඳහන් කරන්න..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Voice Message (Optional)</label>
+                <input type="file" accept="audio/*">
+            </div>
+            <div class="form-group">
+                <label>Gallery Photos</label>
+                <input type="file" accept="image/*" multiple>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Submit Profile</button>
+        </form>
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal-overlay" id="reportModal" style="display: none;">
+        <div class="modal-box">
+            <h3>Report Profile</h3>
+            <p>හේතුව පහතින් සඳහන් කරන්න (Admin වෙත පණිවුඩය යැවේ):</p>
+            <textarea id="reportReason" style="width:100%; height: 60px; background: #141414; color: #fff; border: 1px solid #333; padding: 6px; border-radius: 4px;"></textarea>
+            <div class="btn-group" style="margin-top: 10px;">
+                <button class="btn btn-secondary" onclick="closeReportModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="submitReport()">Send Report</button>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript - ක්‍රියාකාරීත්වය සඳහා -->
-    <script>
-        // Age Verification ක්‍රියාව
-        function exitSite() {
-            window.location.href = "https://www.google.com"; // 18ට අඩු නම් ඉවත් වේ
-        }
-        function enterSite() {
-            document.getElementById('age-gate').style.display = 'none';
-            document.getElementById('main-header').style.display = 'flex';
-            showPage('home-page'); // 18ට වැඩි නම් Home page එකට යයි
-        }
+</div>
 
-        // පිටු මාරු කිරීමේ ක්‍රියාව
-        function showPage(pageId) {
-            let pages = document.querySelectorAll('.container');
-            pages.forEach(page => page.classList.remove('active-page'));
-            document.getElementById(pageId).classList.add('active-page');
-        }
+<script>
+    // --- BASIC SECURITY & DISABLE INSPECT ---
+    document.addEventListener('contextmenu', event => event.preventDefault()); // Right Click Block
+    document.onkeydown = function(e) {
+        if(e.keyCode == 123) return false; // F12 Block
+        if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // Ctrl+Shift+I Block
+        if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U Block
+    }
 
-        // මෙනුව ඇරීම සහ වැසීම
-        function openSidebar() { document.getElementById("sidebar").style.left = "0"; }
-        function closeSidebar() { document.getElementById("sidebar").style.left = "-250px"; }
+    // --- NAV DRAWER TOGGLE ---
+    function toggleNav() {
+        document.getElementById('navMenu').classList.toggle('active');
+    }
 
-        // තවත් දුරකථන අංක එකතු කිරීම (Add Extra Numbers)
-        function addNumberField() {
-            let extraDiv = document.getElementById('extra-numbers');
-            let input = document.createElement('input');
-            input.type = 'text';
-            input.placeholder = 'වෙනත් අංකය (Other Number)';
-            extraDiv.appendChild(input);
-        }
+    // --- AGE GATE ---
+    function acceptAge() {
+        document.getElementById('ageGate').style.display = 'none';
+    }
+    function exitSite() {
+        window.location.href = "https://www.google.com";
+    }
 
-        // Subscribe කිරීම (Live ගණන් වැඩිවීම)
-        let count = 10;
-        function subscribe() {
+    // --- SUBSCRIBE / UNSUBSCRIBE (LIMIT 1 PER USER) ---
+    let isSubscribed = false;
+    let count = 1240;
+
+    function toggleSubscribe() {
+        const subBtn = document.getElementById('subBtn');
+        const subCount = document.getElementById('subCount');
+
+        if(!isSubscribed) {
             count++;
-            document.getElementById('sub-count').innerText = count;
+            subBtn.innerText = 'Unsubscribe';
+            subBtn.style.backgroundColor = '#333';
+            isSubscribed = true;
+        } else {
+            count--;
+            subBtn.innerText = 'Subscribe';
+            subBtn.style.backgroundColor = 'var(--accent-pink)';
+            isSubscribed = false;
         }
+        subCount.innerText = `Subscribers: ${count.toLocaleString()}`;
+    }
 
-        // Report යැවීම
-        function submitReport() {
-            let reason = document.getElementById('report-reason').value;
-            if(reason.trim() === "") {
-                alert("කරුණාකර හේතුව ඇතුළත් කරන්න.");
-                return;
-            }
-            // Admin ට මැසේජ් යන ආකාරය නිරූපණය
-            alert("Report සාර්ථකව Admin වෙත යවන ලදී!\n\nහේතුව: " + reason + "\nProfile Link: https://joylix.com/user/kasun-perera\n\n(රිපෝට් 7ක් පැමිණි පසු මෙම ගිණුම ඉවත් වේ)");
-            document.getElementById('report-modal').style.display = 'none';
-            document.getElementById('report-reason').value = '';
-        }
-    </script>
+    // --- COPY PROFILE LINK ---
+    function copyProfileLink() {
+        const dummyUrl = window.location.href;
+        navigator.clipboard.writeText(dummyUrl).then(() => {
+            alert("Profile link copied to clipboard!");
+        });
+    }
+
+    // --- REPORTING DROPDOWN & MODAL ---
+    function toggleDropdown() {
+        const menu = document.getElementById('reportDropdown');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function openReportModal() {
+        document.getElementById('reportDropdown').style.display = 'none';
+        document.getElementById('reportModal').style.display = 'flex';
+    }
+
+    function closeReportModal() {
+        document.getElementById('reportModal').style.display = 'none';
+    }
+
+    function submitReport() {
+        alert("Report එක Admin වෙත යවන ලදී.");
+        closeReportModal();
+    }
+
+    // --- NAVIGATION VIEWS ---
+    function showHome() {
+        document.getElementById('homeView').style.display = 'block';
+        document.getElementById('registerView').style.display = 'none';
+        toggleNav();
+    }
+
+    function showRegister() {
+        document.getElementById('homeView').style.display = 'none';
+        document.getElementById('registerView').style.display = 'block';
+        toggleNav();
+    }
+
+    function toggleSettings() {
+        const settings = document.getElementById('privateSettings');
+        settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
+        toggleNav();
+    }
+
+    function handleRegister(e) {
+        e.preventDefault();
+        alert("Profile එක සාර්ථකව ඇතුළත් කළා!");
+        showHome();
+    }
+</script>
+
 </body>
 </html>
