@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joylix - Live Platform</title>
+    <title>Joylix - Auto Register & Live Sync</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <!-- Official Google Identity Services SDK (Original Google Sign-In සඳහා) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
         :root {
             --bg-color: #0d0d0d;
             --card-bg: #1a1a1a;
             --accent-pink: #ff1493;
-            --accent-hover: #c71585;
             --text-color: #ffffff;
             --text-sub: #b0b0b0;
             --border-color: #333333;
@@ -38,12 +40,7 @@
 
         .logo { background-color: var(--accent-pink); color: #fff; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
 
-        .login-btn {
-            background-color: var(--accent-pink); color: #fff; border: none; padding: 6px 14px;
-            border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.85rem;
-        }
-
-        /* Rewards Banner (Only visible for logged-in users) */
+        /* Rewards Banner (Only for Logged-In Users) */
         .rewards-banner {
             background: linear-gradient(135deg, #ff1493 0%, #4b0082 100%);
             margin: 12px; padding: 14px; border-radius: 10px; color: #fff;
@@ -53,7 +50,6 @@
         .rewards-banner h4 { font-size: 0.95rem; margin-bottom: 2px; }
         .rewards-banner p { font-size: 0.8rem; opacity: 0.9; }
 
-        /* Lock Notice for Guests */
         .guest-notice {
             background-color: #1a1a1a; margin: 12px; padding: 12px; border-radius: 8px;
             border: 1px dashed var(--accent-pink); text-align: center; font-size: 0.85rem; color: var(--text-sub);
@@ -64,14 +60,14 @@
         .profile-avatar { width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--accent-pink); object-fit: cover; }
         .profile-info { flex: 1; }
         .profile-name { font-size: 1.1rem; font-weight: bold; }
-
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; padding: 20px; z-index: 1000;
+        
+        .user-tag {
+            font-size: 0.75rem; background: #25D366; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 6px;
         }
-        .modal-box { background: var(--card-bg); border: 1px solid var(--accent-pink); padding: 20px; border-radius: 12px; text-align: center; width: 100%; max-width: 360px; }
-        .account-item { display: flex; align-items: center; gap: 10px; background: #141414; padding: 10px; border-radius: 8px; margin-top: 10px; cursor: pointer; border: 1px solid #333; }
-        .account-item img { width: 40px; height: 40px; border-radius: 50%; }
+
+        .signout-btn {
+            background: #333; color: #fff; border: none; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; display: none;
+        }
     </style>
 </head>
 <body>
@@ -79,65 +75,55 @@
 <div class="app-container">
     <header>
         <div class="logo">Joylix</div>
-        <button class="login-btn" id="authBtn" onclick="toggleAuth()">Sign In</button>
+        
+        <!-- Official Google Sign-In Button Container -->
+        <div id="g_id_onload"
+             data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+        
+        <div class="g_id_signin" id="googleBtn" data-type="standard" data-size="medium" data-theme="dark" data-text="sign_in_with"></div>
+        <button class="signout-btn" id="logoutBtn" onclick="logout()">Sign Out</button>
     </header>
 
-    <!-- 1. LOGGED-IN ONLY REWARDS BANNER -->
+    <!-- 1. REWARDS SECTION (LOGGED-IN USERS ONLY) -->
     <div id="rewardsSection" style="display: none;">
         <div class="rewards-banner">
             <i class="fas fa-gift"></i>
             <div>
-                <h4>🎉 ඔබට හිමි විශේෂ ත්‍යාග (Claim Reward)</h4>
-                <p>ලියාපදිංචි වී සිටින නිසා ඔබට රු. 1,000ක Cashback / Bonus හිමිවී ඇත! තව යහළුවන් එකතු කර අමතර ත්‍යාග දිනාගන්න.</p>
+                <h4>🎉 ඔබ සාර්ථකව Auto-Register විය!</h4>
+                <p>ඔබගේ Google Account එක හරහා Profile එක සජීවීව සක්‍රීය වී ඇත. විශේෂ දීමනා සහ Rewards ලබා ගැනීමට සුදුසුකම් ලබා ඇත.</p>
             </div>
         </div>
     </div>
 
-    <!-- 2. GUEST NOTICE (Log වී නැති අයට පමණක් පෙනෙන පණිවුඩය) -->
+    <!-- 2. GUEST NOTICE -->
     <div id="guestNoticeSection" class="guest-notice">
-        <i class="fas fa-lock" style="color: var(--accent-pink);"></i> ත්‍යාග සහ විශේෂ දීමනා ලබා ගැනීමට **Sign In** වන්න.
+        <i class="fas fa-lock" style="color: var(--accent-pink);"></i> ඔබගේ **Original Google Account** එකෙන් Sign In වූ පසු Auto Register වී ත්‍යාග පෙනෙනු ඇත.
     </div>
 
-    <!-- PUBLIC LIVE PROFILE VIEW -->
+    <!-- 3. LIVE PROFILE DISPLAY (EVERYONE SEES THIS FROM DATABASE) -->
     <div class="profile-card">
         <div class="profile-header">
             <img id="liveAvatar" src="https://via.placeholder.com/75" alt="Profile" class="profile-avatar">
             <div class="profile-info">
-                <div class="profile-name" id="liveName">Loading Profile...</div>
-                <div style="font-size: 0.85rem; color: var(--text-sub);" id="liveCountry">Sri Lanka</div>
-                <div style="font-size: 0.8rem; color: #25D366; margin-top: 4px;">
-                    <i class="fab fa-whatsapp"></i> <span id="livePhone">-</span>
+                <div class="profile-name-row">
+                    <span class="profile-name" id="liveName">Guest User</span>
+                    <span id="liveBadge"></span>
                 </div>
+                <div style="font-size: 0.85rem; color: var(--text-sub);" id="liveEmail">No Email</div>
             </div>
         </div>
         <div style="margin-top: 12px; background: #141414; padding: 10px; border-radius: 6px; font-size: 0.85rem;">
-            <strong>Packages & Details:</strong>
-            <p id="liveDetails" style="color: var(--text-sub); margin-top: 4px;">Loading...</p>
-        </div>
-    </div>
-
-    <!-- GOOGLE SIGN IN MODAL -->
-    <div class="modal-overlay" id="loginModal" style="display: none;">
-        <div class="modal-box">
-            <i class="fab fa-google" style="font-size: 2rem; color: var(--accent-pink);"></i>
-            <h3 style="margin-top: 8px;">Select Account</h3>
-            <p style="font-size: 0.8rem; color: var(--text-sub);">Sign in to unlock user rewards:</p>
-
-            <div class="account-item" onclick="performLogin('Sadew Mahisha', 'sadew@gmail.com', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sadew')">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sadew" alt="User">
-                <div style="text-align: left;">
-                    <strong style="display: block; font-size: 0.85rem;">Sadew Mahisha</strong>
-                    <small style="color: var(--text-sub); font-size: 0.75rem;">sadew@gmail.com</small>
-                </div>
-            </div>
-
-            <button onclick="closeModal()" style="width: 100%; padding: 8px; margin-top: 12px; background: #333; color: #fff; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
+            <strong>Live Account Status:</strong>
+            <p id="liveStatus" style="color: var(--text-sub); margin-top: 4px;">තවම Log In වී නැත. Google Sign-In එකෙන් Log වන්න.</p>
         </div>
     </div>
 </div>
 
 <script>
-    // Firebase Config
+    // 1. Firebase Configuration
     const firebaseConfig = {
         apiKey: "YOUR_API_KEY",
         authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -151,48 +137,63 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    let loggedInUser = null;
+    // JWT Token Decode කරන Function එක (Google Details ලබා ගැනීමට)
+    function parseJwt(token) {
+        var base64Url = token.split('.')[1];
+        var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    }
 
-    // Fetch Live Profile Data for Everyone
-    database.ref('public_profile').on('value', (snapshot) => {
+    // 2. Google Sign-In වූ පසු Auto-Register වන Function එක
+    function handleCredentialResponse(response) {
+        const responsePayload = parseJwt(response.credential);
+
+        const userData = {
+            name: responsePayload.name,
+            email: responsePayload.email,
+            avatar: responsePayload.picture,
+            lastLogin: new Date().toISOString()
+        };
+
+        // Firebase Realtime Database එකට Auto Register වී Data Save වීම
+        database.ref('active_user').set(userData).then(() => {
+            // Screen UI වෙනස් කිරීම
+            document.getElementById('googleBtn').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'block';
+            document.getElementById('rewardsSection').style.display = 'block';
+            document.getElementById('guestNoticeSection').style.display = 'none';
+
+            alert(`${userData.name} ලෙස සාර්ථකව Auto-Register වී Log විය!`);
+        });
+    }
+
+    // 3. Database එකේ ඇති Data සියලුම වෙනත් ෆෝන්වලට Live පෙන්වීම
+    database.ref('active_user').on('value', (snapshot) => {
         const data = snapshot.val();
         if(data) {
-            document.getElementById('liveName').innerText = data.name || "User";
-            document.getElementById('liveCountry').innerText = data.country || "Sri Lanka";
-            document.getElementById('livePhone').innerText = data.phone || "N/A";
-            document.getElementById('liveAvatar').src = data.image || "https://via.placeholder.com/75";
-            document.getElementById('liveDetails').innerText = data.details || "No details provided.";
+            document.getElementById('liveName').innerText = data.name;
+            document.getElementById('liveEmail').innerText = data.email;
+            document.getElementById('liveAvatar').src = data.avatar;
+            document.getElementById('liveBadge').innerHTML = '<span class="user-tag">Live Registered</span>';
+            document.getElementById('liveStatus').innerText = "ගිණුම සක්‍රීයයි. මෙම විස්තර වෙනත් ඕනෑම අයෙකුගේ ෆෝන් එකටද සජීවීව පෙනේ.";
         }
     });
 
-    function toggleAuth() {
-        if(loggedInUser) {
-            // Sign Out
-            loggedInUser = null;
-            document.getElementById('authBtn').innerText = "Sign In";
-            document.getElementById('rewardsSection').style.display = "none";
-            document.getElementById('guestNoticeSection').style.display = "block";
-            alert("ඔබ Sign Out විය.");
-        } else {
-            document.getElementById('loginModal').style.display = "flex";
-        }
-    }
-
-    function closeModal() {
-        document.getElementById('loginModal').style.display = "none";
-    }
-
-    // Login Action
-    function performLogin(name, email, avatar) {
-        loggedInUser = { name, email, avatar };
+    // 4. Logout Function එක
+    function logout() {
+        document.getElementById('googleBtn').style.display = 'block';
+        document.getElementById('logoutBtn').style.display = 'none';
+        document.getElementById('rewardsSection').style.display = 'none';
+        document.getElementById('guestNoticeSection').style.display = 'block';
         
-        // Show Rewards & Hide Guest Notice
-        document.getElementById('authBtn').innerText = "Sign Out (" + name.split(' ')[0] + ")";
-        document.getElementById('rewardsSection').style.display = "block";
-        document.getElementById('guestNoticeSection').style.display = "none";
-        
-        closeModal();
-        alert(`සාර්ථකයි! ${name} ලෙස Sign In විය. දැන් ඔබට හිමි ත්‍යාග පෙනෙනු ඇත.`);
+        document.getElementById('liveName').innerText = "Guest User";
+        document.getElementById('liveEmail').innerText = "No Email";
+        document.getElementById('liveAvatar').src = "https://via.placeholder.com/75";
+        document.getElementById('liveBadge').innerHTML = "";
+        document.getElementById('liveStatus').innerText = "තවම Log In වී නැත.";
     }
 </script>
 
