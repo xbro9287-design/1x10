@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joylix - Premium Platform</title>
-    <!-- FontAwesome Icons -->
+    <title>Joylix - Live Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
         :root {
             --bg-color: #0d0d0d;
@@ -17,609 +21,178 @@
             --border-color: #333333;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; min-height: 100vh; }
 
         .app-container {
-            width: 100%;
-            max-width: 480px;
-            background-color: #000000;
-            min-height: 100vh;
-            border-left: 1px solid var(--border-color);
-            border-right: 1px solid var(--border-color);
-            position: relative;
-            padding-bottom: 70px;
+            width: 100%; max-width: 480px; background-color: #000; min-height: 100vh;
+            border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);
+            position: relative; padding-bottom: 70px;
         }
 
         header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            background-color: rgba(13, 13, 13, 0.95);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;
+            background-color: rgba(13, 13, 13, 0.95); position: sticky; top: 0; z-index: 100;
             border-bottom: 1px solid var(--border-color);
         }
 
-        .logo {
-            background-color: var(--accent-pink);
-            color: #fff;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            letter-spacing: 1px;
+        .logo { background-color: var(--accent-pink); color: #fff; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
+
+        .login-btn {
+            background-color: var(--accent-pink); color: #fff; border: none; padding: 6px 14px;
+            border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.85rem;
         }
 
-        .header-actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .icon-btn {
-            background: none;
-            border: none;
-            color: var(--text-color);
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        /* Sign In Button */
-        .signin-btn {
-            background-color: var(--accent-pink);
-            color: #fff;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: 0.2s;
-        }
-
-        .signin-btn:hover { background-color: var(--accent-hover); }
-
-        .nav-menu {
-            position: fixed;
-            top: 0; right: -100%;
-            width: 250px; height: 100%;
-            background-color: var(--card-bg);
-            z-index: 200;
-            transition: 0.3s ease-in-out;
-            padding: 20px;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-        }
-
-        .nav-menu.active { right: 0; }
-        .nav-menu ul { list-style: none; margin-top: 30px; }
-        .nav-menu li { margin-bottom: 20px; }
-        .nav-menu a {
-            color: var(--text-color);
-            text-decoration: none;
-            font-size: 1.05rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.92);
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .modal-box {
-            background-color: var(--card-bg);
-            border: 1px solid var(--accent-pink);
-            border-radius: 12px;
-            padding: 24px;
-            text-align: center;
-            width: 100%;
-            max-width: 380px;
-        }
-
-        .modal-box h2, .modal-box h3 { color: var(--accent-pink); margin-bottom: 12px; }
-        .modal-box p { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 20px; line-height: 1.4; }
-
-        .btn-group { display: flex; gap: 10px; }
-        
-        .btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-primary { background-color: var(--accent-pink); color: white; }
-        .btn-primary:hover { background-color: var(--accent-hover); }
-        .btn-secondary { background-color: #333; color: white; }
-
-        /* Google Sign-In Account Selector Modal Styles */
-        .account-selector-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .account-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background-color: #141414;
-            padding: 10px 14px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            text-align: left;
-            transition: 0.2s;
-        }
-
-        .account-item:hover {
-            border-color: var(--accent-pink);
-            background-color: #222;
-        }
-
-        .account-item img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-        }
-
-        .account-details strong { display: block; font-size: 0.85rem; color: #fff; }
-        .account-details small { font-size: 0.75rem; color: var(--text-sub); }
-
+        /* Rewards Banner (Only visible for logged-in users) */
         .rewards-banner {
             background: linear-gradient(135deg, #ff1493 0%, #4b0082 100%);
-            margin: 12px;
-            padding: 12px;
-            border-radius: 8px;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 4px 10px rgba(255, 20, 147, 0.3);
+            margin: 12px; padding: 14px; border-radius: 10px; color: #fff;
+            display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(255, 20, 147, 0.4);
         }
-
-        .rewards-banner i { font-size: 1.8rem; color: #ffd700; }
+        .rewards-banner i { font-size: 2.2rem; color: #ffd700; }
         .rewards-banner h4 { font-size: 0.95rem; margin-bottom: 2px; }
-        .rewards-banner p { font-size: 0.75rem; opacity: 0.9; }
+        .rewards-banner p { font-size: 0.8rem; opacity: 0.9; }
 
-        .profile-card {
-            padding: 16px;
-            border-bottom: 1px solid var(--border-color);
+        /* Lock Notice for Guests */
+        .guest-notice {
+            background-color: #1a1a1a; margin: 12px; padding: 12px; border-radius: 8px;
+            border: 1px dashed var(--accent-pink); text-align: center; font-size: 0.85rem; color: var(--text-sub);
         }
 
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            position: relative;
-        }
-
-        .profile-avatar {
-            width: 75px;
-            height: 75px;
-            border-radius: 50%;
-            border: 2px solid var(--accent-pink);
-            object-fit: cover;
-        }
-
+        .profile-card { padding: 16px; border-bottom: 1px solid var(--border-color); }
+        .profile-header { display: flex; align-items: center; gap: 14px; }
+        .profile-avatar { width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--accent-pink); object-fit: cover; }
         .profile-info { flex: 1; }
-
-        .profile-name-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
         .profile-name { font-size: 1.1rem; font-weight: bold; }
-        
-        .country-flag {
-            font-size: 0.85rem;
-            color: var(--text-sub);
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
 
-        .sub-count {
-            font-size: 0.8rem;
-            color: var(--text-sub);
-            margin: 4px 0 8px 0;
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; padding: 20px; z-index: 1000;
         }
-
-        .action-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-sm {
-            padding: 5px 12px;
-            font-size: 0.75rem;
-            border-radius: 4px;
-        }
-
-        .copy-btn {
-            background-color: #262626;
-            color: #fff;
-            border: 1px solid var(--border-color);
-            padding: 5px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .audio-container {
-            margin-top: 14px;
-            background-color: #141414;
-            padding: 8px 12px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border: 1px solid #282828;
-        }
-
-        .audio-container audio { height: 30px; width: 100%; }
-
-        .pricing-section {
-            margin-top: 12px;
-            background-color: #141414;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-        }
-
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            margin-top: 12px;
-        }
-
-        .gallery-grid img {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-
-        .private-settings {
-            margin: 12px;
-            padding: 14px;
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            border: 1px dashed var(--accent-pink);
-        }
-
-        .user-signed-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #141414;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 12px;
-        }
-
-        .user-signed-info img {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-        }
-
-        .form-view {
-            padding: 16px;
-            display: none;
-        }
-
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 0.8rem; margin-bottom: 4px; color: var(--text-sub); }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 8px;
-            background-color: #141414;
-            border: 1px solid var(--border-color);
-            color: #fff;
-            border-radius: 4px;
-            font-size: 0.85rem;
-        }
+        .modal-box { background: var(--card-bg); border: 1px solid var(--accent-pink); padding: 20px; border-radius: 12px; text-align: center; width: 100%; max-width: 360px; }
+        .account-item { display: flex; align-items: center; gap: 10px; background: #141414; padding: 10px; border-radius: 8px; margin-top: 10px; cursor: pointer; border: 1px solid #333; }
+        .account-item img { width: 40px; height: 40px; border-radius: 50%; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <!-- Header -->
     <header>
         <div class="logo">Joylix</div>
-        <div class="header-actions">
-            <!-- Sign In Button -->
-            <button class="signin-btn" id="headerSignInBtn" onclick="openSignInModal()">
-                <i class="fab fa-google"></i> <span id="signInBtnText">Sign In</span>
-            </button>
-            <button class="icon-btn" onclick="toggleNav()"><i class="fas fa-bars"></i></button>
-        </div>
+        <button class="login-btn" id="authBtn" onclick="toggleAuth()">Sign In</button>
     </header>
 
-    <!-- Navigation Drawer -->
-    <nav class="nav-menu" id="navMenu">
-        <button class="icon-btn" onclick="toggleNav()" style="float: right;"><i class="fas fa-times"></i></button>
-        <ul>
-            <li><a href="#" onclick="showHome()"><i class="fas fa-home"></i> Home</a></li>
-            <li><a href="#" onclick="showRegister()"><i class="fas fa-user-plus"></i> Register Profile</a></li>
-            <li><a href="#" onclick="toggleSettings()"><i class="fas fa-cog"></i> Private Settings</a></li>
-        </ul>
-    </nav>
-
-    <!-- Age Gate Modal -->
-    <div class="modal-overlay" id="ageGate">
-        <div class="modal-box">
-            <h2><i class="fas fa-exclamation-triangle"></i> 18+ Adult Content</h2>
-            <p>මෙම වෙබ් අඩවිය වැඩිහිටියන් සඳහා පමණි. ඉදිරියට යාමට ඔබ අවුරුදු 18ට වැඩි අයෙකු බව තහවුරු කරන්න.</p>
-            <div class="btn-group">
-                <button class="btn btn-secondary" onclick="exitSite()">මම 18ට අඩුයි (Exit)</button>
-                <button class="btn btn-primary" onclick="acceptAge()">මම 18ට වැඩියි (Enter)</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- GOOGLE ACCOUNT SELECTOR MODAL (NO MANUAL EMAIL/PASSWORD INPUT) -->
-    <div class="modal-overlay" id="signInModal" style="display: none;">
-        <div class="modal-box">
-            <i class="fab fa-google" style="font-size: 2rem; color: var(--accent-pink); margin-bottom: 10px;"></i>
-            <h3>Choose an Account</h3>
-            <p style="font-size: 0.8rem; margin-bottom: 12px;">Sign in to Joylix using Google Account:</p>
-            
-            <!-- List of available Google Accounts on device -->
-            <div class="account-selector-list">
-                <div class="account-item" onclick="selectGoogleAccount('Sadew Mahisha', 'sadewmahisha@gmail.com', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sadew')">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sadew" alt="User Avatar">
-                    <div class="account-details">
-                        <strong>Sadew Mahisha</strong>
-                        <small>sadewmahisha@gmail.com</small>
-                    </div>
-                </div>
-
-                <div class="account-item" onclick="selectGoogleAccount('User Account 2', 'user2@gmail.com', 'https://api.dicebear.com/7.x/avataaars/svg?seed=User2')">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User2" alt="User Avatar">
-                    <div class="account-details">
-                        <strong>User Account 2</strong>
-                        <small>user2@gmail.com</small>
-                    </div>
-                </div>
-            </div>
-
-            <button class="btn btn-secondary" onclick="closeSignInModal()" style="width: 100%;">Cancel</button>
-        </div>
-    </div>
-
-    <!-- MAIN HOME VIEW -->
-    <div id="homeView">
-        <!-- Exclusive Banner for Signed In Users -->
-        <div class="rewards-banner" id="userRewardsBanner" style="display: none;">
+    <!-- 1. LOGGED-IN ONLY REWARDS BANNER -->
+    <div id="rewardsSection" style="display: none;">
+        <div class="rewards-banner">
             <i class="fas fa-gift"></i>
             <div>
-                <h4>ලියාපදිංචි වන අලුත් අය සයිට් එකට එකතු කරන්න!</h4>
-                <p>ඔබගේ Link එකෙන් අය ලියාපදිංචි කරවා විශේෂ ත්‍යාග සහ Packages දිනාගන්න.</p>
+                <h4>🎉 ඔබට හිමි විශේෂ ත්‍යාග (Claim Reward)</h4>
+                <p>ලියාපදිංචි වී සිටින නිසා ඔබට රු. 1,000ක Cashback / Bonus හිමිවී ඇත! තව යහළුවන් එකතු කර අමතර ත්‍යාග දිනාගන්න.</p>
             </div>
-        </div>
-
-        <!-- Sample Profile Card -->
-        <div class="profile-card">
-            <div class="profile-header">
-                <img src="https://via.placeholder.com/75" alt="Profile" class="profile-avatar">
-                <div class="profile-info">
-                    <div class="profile-name-row">
-                        <span class="profile-name">Sarah</span>
-                        <span class="country-flag"><i class="fas fa-globe-asia"></i> Sri Lanka</span>
-                    </div>
-                    <div class="sub-count" id="subCount">Subscribers: 1,240</div>
-                    
-                    <div class="action-row">
-                        <button class="btn btn-primary btn-sm" id="subBtn" onclick="toggleSubscribe()">Subscribe</button>
-                        <button class="copy-btn" onclick="copyProfileLink()" title="Copy Link"><i class="fas fa-link"></i></button>
-                        <a href="https://wa.me/1234567890" target="_blank" style="color:#25D366; font-size: 1.2rem; margin-left: auto;"><i class="fab fa-whatsapp"></i></a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Voice Player -->
-            <div class="audio-container">
-                <i class="fas fa-microphone" style="color: var(--accent-pink);"></i>
-                <audio controls>
-                    <source src="sample-voice.mp3" type="audio/mpeg">
-                </audio>
-            </div>
-
-            <!-- Packages Section -->
-            <div class="pricing-section">
-                <strong><i class="fas fa-tag"></i> Packages & Prices:</strong>
-                <p style="color: var(--text-sub); margin-top: 4px;">Standard Call: LKR 5,000 | VIP Package: LKR 12,000</p>
-            </div>
-
-            <!-- Gallery -->
-            <div class="gallery-grid">
-                <img src="https://via.placeholder.com/150" alt="Gallery 1">
-                <img src="https://via.placeholder.com/150" alt="Gallery 2">
-                <img src="https://via.placeholder.com/150" alt="Gallery 3">
-            </div>
-        </div>
-
-        <!-- Private Account Settings Section (Logged-In User Info Recorded Here) -->
-        <div class="private-settings" id="privateSettings" style="display: none;">
-            <h3><i class="fas fa-lock"></i> Account Owner Settings (Logged In)</h3>
-            
-            <!-- Logged In User Details Recorded -->
-            <div class="user-signed-info" id="userSignedInfo">
-                <img id="signedAvatar" src="" alt="User">
-                <div>
-                    <strong id="signedName" style="color: #fff; font-size: 0.95rem;"></strong>
-                    <p id="signedEmail" style="color: var(--text-sub); font-size: 0.75rem;"></p>
-                </div>
-            </div>
-
-            <p style="font-size: 0.8rem; color: #ff4d4d;"><strong>Account Status:</strong> Active (Reports: 2/7)</p>
-            <small style="font-size: 0.7rem; color: var(--text-sub);">Report 7ක් වූ විට ස්වයංක්‍රීයව ගිණුම තහනම් වේ.</small>
         </div>
     </div>
 
-    <!-- REGISTRATION FORM VIEW -->
-    <div id="registerView" class="form-view">
-        <h2 style="font-size: 1.1rem; color: var(--accent-pink); margin-bottom: 15px;">Register Profile</h2>
-        <form onsubmit="handleRegister(event)">
-            <div class="form-group">
-                <label>Profile Picture</label>
-                <input type="file" accept="image/*" required>
-            </div>
-            <div class="form-group">
-                <label>Name (Required)</label>
-                <input type="text" placeholder="Your Name" required>
-            </div>
-            <div class="form-group">
-                <label>Country</label>
-                <select required>
-                    <option value="Sri Lanka">Sri Lanka</option>
-                    <option value="India">India</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>WhatsApp Number</label>
-                <input type="tel" placeholder="+94..." required>
-            </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Submit Profile</button>
-        </form>
+    <!-- 2. GUEST NOTICE (Log වී නැති අයට පමණක් පෙනෙන පණිවුඩය) -->
+    <div id="guestNoticeSection" class="guest-notice">
+        <i class="fas fa-lock" style="color: var(--accent-pink);"></i> ත්‍යාග සහ විශේෂ දීමනා ලබා ගැනීමට **Sign In** වන්න.
     </div>
 
+    <!-- PUBLIC LIVE PROFILE VIEW -->
+    <div class="profile-card">
+        <div class="profile-header">
+            <img id="liveAvatar" src="https://via.placeholder.com/75" alt="Profile" class="profile-avatar">
+            <div class="profile-info">
+                <div class="profile-name" id="liveName">Loading Profile...</div>
+                <div style="font-size: 0.85rem; color: var(--text-sub);" id="liveCountry">Sri Lanka</div>
+                <div style="font-size: 0.8rem; color: #25D366; margin-top: 4px;">
+                    <i class="fab fa-whatsapp"></i> <span id="livePhone">-</span>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 12px; background: #141414; padding: 10px; border-radius: 6px; font-size: 0.85rem;">
+            <strong>Packages & Details:</strong>
+            <p id="liveDetails" style="color: var(--text-sub); margin-top: 4px;">Loading...</p>
+        </div>
+    </div>
+
+    <!-- GOOGLE SIGN IN MODAL -->
+    <div class="modal-overlay" id="loginModal" style="display: none;">
+        <div class="modal-box">
+            <i class="fab fa-google" style="font-size: 2rem; color: var(--accent-pink);"></i>
+            <h3 style="margin-top: 8px;">Select Account</h3>
+            <p style="font-size: 0.8rem; color: var(--text-sub);">Sign in to unlock user rewards:</p>
+
+            <div class="account-item" onclick="performLogin('Sadew Mahisha', 'sadew@gmail.com', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sadew')">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sadew" alt="User">
+                <div style="text-align: left;">
+                    <strong style="display: block; font-size: 0.85rem;">Sadew Mahisha</strong>
+                    <small style="color: var(--text-sub); font-size: 0.75rem;">sadew@gmail.com</small>
+                </div>
+            </div>
+
+            <button onclick="closeModal()" style="width: 100%; padding: 8px; margin-top: 12px; background: #333; color: #fff; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    let currentUser = null;
+    // Firebase Config
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+        projectId: "YOUR_PROJECT",
+        storageBucket: "YOUR_PROJECT.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
 
-    function toggleNav() {
-        document.getElementById('navMenu').classList.toggle('active');
-    }
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-    function acceptAge() {
-        document.getElementById('ageGate').style.display = 'none';
-    }
-    function exitSite() {
-        window.location.href = "https://www.google.com";
-    }
+    let loggedInUser = null;
 
-    // Modal Control Functions
-    function openSignInModal() {
-        if(currentUser) {
-            // Sign Out Option
-            if(confirm("ඔබට Sign Out වීමට අවශ්‍යද?")) {
-                currentUser = null;
-                document.getElementById('signInBtnText').innerText = "Sign In";
-                document.getElementById('userRewardsBanner').style.display = 'none';
-                document.getElementById('privateSettings').style.display = 'none';
-                alert("ඔබ Sign Out විය.");
-            }
+    // Fetch Live Profile Data for Everyone
+    database.ref('public_profile').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if(data) {
+            document.getElementById('liveName').innerText = data.name || "User";
+            document.getElementById('liveCountry').innerText = data.country || "Sri Lanka";
+            document.getElementById('livePhone').innerText = data.phone || "N/A";
+            document.getElementById('liveAvatar').src = data.image || "https://via.placeholder.com/75";
+            document.getElementById('liveDetails').innerText = data.details || "No details provided.";
+        }
+    });
+
+    function toggleAuth() {
+        if(loggedInUser) {
+            // Sign Out
+            loggedInUser = null;
+            document.getElementById('authBtn').innerText = "Sign In";
+            document.getElementById('rewardsSection').style.display = "none";
+            document.getElementById('guestNoticeSection').style.display = "block";
+            alert("ඔබ Sign Out විය.");
         } else {
-            document.getElementById('signInModal').style.display = 'flex';
+            document.getElementById('loginModal').style.display = "flex";
         }
     }
 
-    function closeSignInModal() {
-        document.getElementById('signInModal').style.display = 'none';
+    function closeModal() {
+        document.getElementById('loginModal').style.display = "none";
     }
 
-    // Account Selector Handler (Select account with one click)
-    function selectGoogleAccount(name, email, avatar) {
-        currentUser = { name: name, email: email, avatar: avatar };
-
-        // Save and record details in UI
-        document.getElementById('signedName').innerText = currentUser.name;
-        document.getElementById('signedEmail').innerText = currentUser.email;
-        document.getElementById('signedAvatar').src = currentUser.avatar;
-
-        document.getElementById('signInBtnText').innerText = currentUser.name.split(' ')[0];
-        document.getElementById('signInModal').style.display = 'none';
-        document.getElementById('userRewardsBanner').style.display = 'flex';
+    // Login Action
+    function performLogin(name, email, avatar) {
+        loggedInUser = { name, email, avatar };
         
-        alert(`සාර්ථකයි! ${currentUser.name} (${currentUser.email}) ලෙස Sign In විය.`);
-    }
-
-    function toggleSubscribe() {
-        const subBtn = document.getElementById('subBtn');
-        const subCount = document.getElementById('subCount');
-        let count = 1240;
-
-        if(subBtn.innerText === 'Subscribe') {
-            subBtn.innerText = 'Unsubscribe';
-            subBtn.style.backgroundColor = '#333';
-            subCount.innerText = `Subscribers: ${(count + 1).toLocaleString()}`;
-        } else {
-            subBtn.innerText = 'Subscribe';
-            subBtn.style.backgroundColor = 'var(--accent-pink)';
-            subCount.innerText = `Subscribers: ${count.toLocaleString()}`;
-        }
-    }
-
-    function copyProfileLink() {
-        navigator.clipboard.writeText(window.location.href).then(() => {
-            alert("Profile link copied to clipboard!");
-        });
-    }
-
-    function showHome() {
-        document.getElementById('homeView').style.display = 'block';
-        document.getElementById('registerView').style.display = 'none';
-        toggleNav();
-    }
-
-    function showRegister() {
-        document.getElementById('homeView').style.display = 'none';
-        document.getElementById('registerView').style.display = 'block';
-        toggleNav();
-    }
-
-    function toggleSettings() {
-        if(!currentUser) {
-            alert("මෙම කොටසට පිවිසීමට ප්‍රථමයෙන් Header එකේ ඇති Sign In Button එක ක්ලික් කර Account එක තෝරන්න!");
-            toggleNav();
-            return;
-        }
-        const settings = document.getElementById('privateSettings');
-        settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
-        toggleNav();
-    }
-
-    function handleRegister(e) {
-        e.preventDefault();
-        alert("Profile එක සාර්ථකව ඇතුළත් කළා!");
-        showHome();
+        // Show Rewards & Hide Guest Notice
+        document.getElementById('authBtn').innerText = "Sign Out (" + name.split(' ')[0] + ")";
+        document.getElementById('rewardsSection').style.display = "block";
+        document.getElementById('guestNoticeSection').style.display = "none";
+        
+        closeModal();
+        alert(`සාර්ථකයි! ${name} ලෙස Sign In විය. දැන් ඔබට හිමි ත්‍යාග පෙනෙනු ඇත.`);
     }
 </script>
 
