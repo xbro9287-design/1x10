@@ -58,11 +58,9 @@
         .rewards-banner {
             background: linear-gradient(135deg, #ff1493 0%, #4b0082 100%);
             margin-bottom: 16px; padding: 14px; border-radius: 10px; color: #fff;
-            display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(255, 20, 147, 0.4);
+            display: flex; align-items: center; gap: 12px;
         }
         .rewards-banner i { font-size: 2.2rem; color: #ffd700; }
-        .rewards-banner h4 { font-size: 0.95rem; margin-bottom: 2px; }
-        .rewards-banner p { font-size: 0.8rem; opacity: 0.9; }
 
         .form-group { margin-bottom: 14px; }
         .form-group label { display: block; font-size: 0.85rem; margin-bottom: 5px; color: var(--text-sub); }
@@ -104,6 +102,7 @@
         }
 
         .report-btn { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 0.8rem; margin-top: 10px; }
+        .back-btn { background: #333; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-bottom: 12px; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -117,14 +116,13 @@
     <!-- Side Navigation Menu -->
     <div class="side-menu" id="sideMenu">
         <div class="menu-item" onclick="showPage('homePage')"><i class="fas fa-home"></i> Home</div>
-        <div class="menu-item" id="navRegister" onclick="showRegisterPage()"><i class="fas fa-user-plus"></i> Register Profile</div>
+        <div class="menu-item" onclick="showRegisterPage()"><i class="fas fa-user-plus"></i> Register Profile</div>
         <div class="menu-item" onclick="showPage('settingsPage')"><i class="fas fa-cog"></i> Settings</div>
         <div class="menu-item" id="navLogout" onclick="logout()" style="display:none;"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
     </div>
 
-    <!-- HOME PAGE -->
+    <!-- HOME PAGE (Public View - No Auth Needed) -->
     <div id="homePage" class="page-section active">
-        <!-- Rewards Banner -->
         <div class="rewards-banner">
             <i class="fas fa-gift"></i>
             <div>
@@ -139,12 +137,21 @@
         </div>
     </div>
 
-    <!-- REGISTER PAGE -->
+    <!-- REGISTER PAGE (Dedicated Page View) -->
     <div id="registerPage" class="page-section">
-        <h3><i class="fas fa-id-card" style="color: var(--accent-pink);"></i> Profile Registration</h3>
-        <p style="color: var(--text-sub); font-size: 0.8rem; margin-bottom: 14px;">Google Sign In වී සිටීම අනිවාර්ය වේ.</p>
+        <button class="back-btn" onclick="showPage('homePage')"><i class="fas fa-arrow-left"></i> Back to Home</button>
+        <h3><i class="fas fa-id-card" style="color: var(--accent-pink);"></i> Register Profile Page</h3>
+        <p style="color: var(--text-sub); font-size: 0.8rem; margin-bottom: 14px;">ඔබගේ Profile එක සහ Photos විකුණුම් සඳහා එකතු කරන්න.</p>
 
-        <form id="regForm" onsubmit="handleRegister(event)">
+        <!-- Auth Status Box -->
+        <div id="authBox" style="background: #181818; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #333;">
+            <p id="authText" style="font-size: 0.85rem; color: #bbb;">Profile එක Register කිරීමට Google Sign In වන්න.</p>
+            <button id="googleBtn" onclick="googleLogin()" style="background: #4285F4; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-weight: bold;">
+                <i class="fab fa-google"></i> Sign In with Google
+            </button>
+        </div>
+
+        <form id="regForm" onsubmit="handleRegister(event)" style="display: none;">
             <div class="form-group">
                 <label><i class="fas fa-image"></i> Profile Photo URL *</label>
                 <input type="url" id="regAvatar" placeholder="https://example.com/photo.jpg" required>
@@ -188,7 +195,8 @@
 
     <!-- SETTINGS PAGE -->
     <div id="settingsPage" class="page-section">
-        <h3><i class="fas fa-cog" style="color: var(--accent-pink);"></i> Settings & Guidelines</h3>
+        <button class="back-btn" onclick="showPage('homePage')"><i class="fas fa-arrow-left"></i> Back to Home</button>
+        <h3><i class="fas fa-cog" style="color: var(--accent-pink);"></i> Settings & Rules</h3>
         <div style="background: #141414; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 14px;">
             <p style="margin-bottom: 10px;"><i class="fas fa-trophy" style="color: #ffd700;"></i> <strong>Rewards:</strong> Subscribers ලක්ෂයක් (100,000) ලැබුණු පසු විශේෂ ත්‍යාග පිරිනමනු ලැබේ.</p>
             <p style="color: #ff4d4d;"><i class="fas fa-exclamation-triangle"></i> <strong>Account Policy:</strong> යම් ගිණුමකට Reports 7ක් ලැබුණහොත් එම ගිණුම පද්ධතියෙන් ස්වයංක්‍රීයව අයින් කරනු ලැබේ (Delete වේ).</p>
@@ -220,22 +228,30 @@
     }
 
     function showRegisterPage() {
-        if (!currentUser) {
-            auth.signInWithRedirect(provider);
-        } else {
-            showPage('registerPage');
-        }
+        showPage('registerPage');
     }
 
-    auth.getRedirectResult().catch(err => console.error(err));
+    function googleLogin() {
+        auth.signInWithPopup(provider).catch(err => {
+            alert("Login Error: " + err.message);
+        });
+    }
 
     auth.onAuthStateChanged(user => {
         currentUser = user;
+        const regForm = document.getElementById('regForm');
+        const authText = document.getElementById('authText');
+        const googleBtn = document.getElementById('googleBtn');
+
         if (user) {
-            document.getElementById('navRegister').innerHTML = '<i class="fas fa-user-edit"></i> Register Profile';
+            authText.innerHTML = `<span style="color:#25D366;"><i class="fas fa-check-circle"></i> Logged in as: <strong>${user.displayName || user.email}</strong></span>`;
+            googleBtn.style.display = 'none';
+            regForm.style.display = 'block';
             document.getElementById('navLogout').style.display = 'flex';
         } else {
-            document.getElementById('navRegister').innerHTML = '<i class="fas fa-user-plus"></i> Sign In / Register';
+            authText.innerText = "Profile එක Register කිරීමට Google Sign In වන්න.";
+            googleBtn.style.display = 'inline-block';
+            regForm.style.display = 'none';
             document.getElementById('navLogout').style.display = 'none';
         }
     });
@@ -280,20 +296,20 @@
         });
     }
 
-    // Load Public Profiles on Homepage with Icons & Live Status
+    // Public Feed Load - No Login Required
     database.ref('profiles').on('value', snapshot => {
         const feed = document.getElementById('userFeed');
         feed.innerHTML = '';
         const data = snapshot.val();
 
         if (!data) {
-            feed.innerHTML = '<p style="color: var(--text-sub);">කිසිදු Profile එකක් තවම නැත.</p>';
+            feed.innerHTML = '<p style="color: var(--text-sub);">කිසිදු Profile එකක් තවම නැත. පළමු Profile එක Register කරන්න!</p>';
             return;
         }
 
         Object.keys(data).forEach(key => {
             const user = data[key];
-            if (user.reports >= 7) return; // Delete after 7 reports
+            if (user.reports >= 7) return;
 
             let photosHTML = '';
             if (user.photos) {
@@ -357,7 +373,7 @@
 
     function toggleSubscribe(targetUid) {
         if (!currentUser) {
-            alert("Subscribe කිරීමට කරුණාකර පළමුව Sign In වන්න.");
+            alert("Subscribe කිරීමට කරුණාකර Register Page එකට ගොස් Sign In වන්න.");
             return;
         }
         const ref = database.ref(`profiles/${targetUid}`);
@@ -378,7 +394,7 @@
 
     function reportAccount(targetUid) {
         if (!currentUser) {
-            alert("Report කිරීමට කරුණාකර පළමුව Sign In වන්න.");
+            alert("Report කිරීමට කරුණාකර Register Page එකට ගොස් Sign In වන්න.");
             return;
         }
         const ref = database.ref(`profiles/${targetUid}`);
