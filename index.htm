@@ -27,7 +27,7 @@
         .app-container {
             width: 100%; max-width: 480px; background-color: #000; min-height: 100vh;
             border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);
-            position: relative; padding-bottom: 70px;
+            position: relative; padding-bottom: 70px; overflow-x: hidden;
         }
 
         header {
@@ -37,27 +37,33 @@
         }
 
         .logo { background-color: var(--accent-pink); color: #fff; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
-
-        .menu-btn { background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; }
+        .menu-btn { background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 4px 8px; }
 
         .side-menu {
             position: absolute; top: 55px; right: -250px; width: 220px; background-color: #1a1a1a;
             border: 1px solid var(--border-color); border-radius: 8px 0 0 8px; box-shadow: -4px 4px 15px rgba(0,0,0,0.5);
             transition: right 0.3s ease; z-index: 200; display: flex; flex-direction: column;
         }
-
         .side-menu.active { right: 0; }
 
         .menu-item {
             display: flex; align-items: center; gap: 12px; padding: 14px 16px; color: var(--text-color);
             text-decoration: none; border-bottom: 1px solid #2a2a2a; font-size: 0.9rem; cursor: pointer;
         }
-        .menu-item i { color: var(--accent-pink); width: 20px; }
+        .menu-item i { color: var(--accent-pink); width: 20px; text-align: center; }
 
         .page-section { display: none; padding: 16px; }
         .page-section.active { display: block; }
 
-        /* Form Styles */
+        .rewards-banner {
+            background: linear-gradient(135deg, #ff1493 0%, #4b0082 100%);
+            margin-bottom: 16px; padding: 14px; border-radius: 10px; color: #fff;
+            display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(255, 20, 147, 0.4);
+        }
+        .rewards-banner i { font-size: 2.2rem; color: #ffd700; }
+        .rewards-banner h4 { font-size: 0.95rem; margin-bottom: 2px; }
+        .rewards-banner p { font-size: 0.8rem; opacity: 0.9; }
+
         .form-group { margin-bottom: 14px; }
         .form-group label { display: block; font-size: 0.85rem; margin-bottom: 5px; color: var(--text-sub); }
         .form-group input, .form-group textarea {
@@ -71,14 +77,14 @@
             border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px;
         }
 
-        /* Profile & Feed Card Styles */
         .user-card {
             background-color: var(--card-bg); border-radius: 10px; padding: 16px; margin-bottom: 16px;
             border: 1px solid var(--border-color);
         }
-        .user-header { display: flex; gap: 12px; align-items: center; }
-        .user-avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-pink); }
-        
+        .user-header { display: flex; gap: 14px; align-items: center; }
+        .user-avatar { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-pink); }
+        .user-tag { font-size: 0.75rem; background: #25D366; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 6px; }
+
         .sub-btn {
             background-color: var(--accent-pink); color: #fff; border: none; padding: 6px 14px;
             border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 0.85rem;
@@ -108,7 +114,7 @@
         <button class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
     </header>
 
-    <!-- Navigation Drawer -->
+    <!-- Side Navigation Menu -->
     <div class="side-menu" id="sideMenu">
         <div class="menu-item" onclick="showPage('homePage')"><i class="fas fa-home"></i> Home</div>
         <div class="menu-item" id="navRegister" onclick="showRegisterPage()"><i class="fas fa-user-plus"></i> Register Profile</div>
@@ -118,43 +124,52 @@
 
     <!-- HOME PAGE -->
     <div id="homePage" class="page-section active">
-        <h3 style="margin-bottom: 12px;">Registered Users Feed</h3>
+        <!-- Rewards Banner -->
+        <div class="rewards-banner">
+            <i class="fas fa-gift"></i>
+            <div>
+                <h4>🎉 Joylix Rewards & Profiles</h4>
+                <p>Register වී ඔබගේ Packages සහ Profile එක සජීවීව ප්‍රදර්ශනය කරන්න.</p>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 12px;"><i class="fas fa-users" style="color: var(--accent-pink);"></i> Registered Profiles</h3>
         <div id="userFeed">
-            <p style="color: var(--text-sub);">Users load වෙමින් පවතී...</p>
+            <p style="color: var(--text-sub);">Profiles load වෙමින් පවතී...</p>
         </div>
     </div>
 
     <!-- REGISTER PAGE -->
     <div id="registerPage" class="page-section">
-        <h3>Profile Registration</h3>
-        <p style="color: var(--text-sub); font-size: 0.8rem; margin-bottom: 14px;">Sign In වී සිටීම අනිවාර්ය වේ.</p>
+        <h3><i class="fas fa-id-card" style="color: var(--accent-pink);"></i> Profile Registration</h3>
+        <p style="color: var(--text-sub); font-size: 0.8rem; margin-bottom: 14px;">Google Sign In වී සිටීම අනිවාර්ය වේ.</p>
 
         <form id="regForm" onsubmit="handleRegister(event)">
             <div class="form-group">
-                <label>Profile Photo URL *</label>
+                <label><i class="fas fa-image"></i> Profile Photo URL *</label>
                 <input type="url" id="regAvatar" placeholder="https://example.com/photo.jpg" required>
             </div>
             <div class="form-group">
-                <label>නම (Full Name) *</label>
+                <label><i class="fas fa-user"></i> නම (Full Name) *</label>
                 <input type="text" id="regName" placeholder="ඔබගේ නම" required>
             </div>
             <div class="form-group">
-                <label>වයස (Age) *</label>
+                <label><i class="fas fa-calendar-alt"></i> වයස (Age) *</label>
                 <input type="number" id="regAge" placeholder="18 හෝ ඊට වැඩි" required>
                 <small style="color: var(--text-sub);">වයස 18 ට වැඩි විය යුතුය.</small>
                 <div id="ageError" class="error-msg">වයස 18 ට අඩු අයට Register විය නොහැක!</div>
             </div>
             <div class="form-group">
-                <label>Mobile Number / WhatsApp Number *</label>
+                <label><i class="fas fa-phone-alt"></i> Mobile Number / WhatsApp Number *</label>
                 <input type="text" id="regPhone" placeholder="07XXXXXXXX හෝ 947XXXXXXXX" required>
             </div>
             <div class="form-group">
-                <label>About You (තමන්ගේ විස්තර) *</label>
+                <label><i class="fas fa-info-circle"></i> About You (තමන්ගේ විස්තර) *</label>
                 <textarea id="regAbout" rows="3" placeholder="ඔබ ගැන කෙටි විස්තරයක්..." required></textarea>
             </div>
 
             <hr style="border-color: #222; margin: 15px 0;">
-            <h4>Photos with Packages & Prices</h4>
+            <h4><i class="fas fa-images"></i> Photos with Packages & Prices</h4>
 
             <div class="form-group" style="margin-top: 10px;">
                 <label>Photo 1 URL & Price (LKR) *</label>
@@ -167,16 +182,16 @@
                 <input type="number" id="p2Price" placeholder="Price (eg: 2500)">
             </div>
 
-            <button type="submit" class="btn-submit">Register Profile</button>
+            <button type="submit" class="btn-submit"><i class="fas fa-check-circle"></i> Complete Registration</button>
         </form>
     </div>
 
     <!-- SETTINGS PAGE -->
     <div id="settingsPage" class="page-section">
-        <h3>Settings & Guidelines</h3>
+        <h3><i class="fas fa-cog" style="color: var(--accent-pink);"></i> Settings & Guidelines</h3>
         <div style="background: #141414; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 14px;">
-            <p style="margin-bottom: 10px;">🏆 <strong>Rewards:</strong> Subscribers ලක්ෂයක් (100,000) ලැබුණු පසු විශේෂ ත්‍යාග පිරිනමනු ලැබේ.</p>
-            <p style="color: #ff4d4d;">⚠️ <strong>Account Policy:</strong> යම් ගිණුමකට Reports 7ක් ලැබුණහොත් එම ගිණුම පද්ධතියෙන් ස්වයංක්‍රීයව අයින් කරනු ලැබේ (Delete වේ).</p>
+            <p style="margin-bottom: 10px;"><i class="fas fa-trophy" style="color: #ffd700;"></i> <strong>Rewards:</strong> Subscribers ලක්ෂයක් (100,000) ලැබුණු පසු විශේෂ ත්‍යාග පිරිනමනු ලැබේ.</p>
+            <p style="color: #ff4d4d;"><i class="fas fa-exclamation-triangle"></i> <strong>Account Policy:</strong> යම් ගිණුමකට Reports 7ක් ලැබුණහොත් එම ගිණුම පද්ධතියෙන් ස්වයංක්‍රීයව අයින් කරනු ලැබේ (Delete වේ).</p>
         </div>
     </div>
 </div>
@@ -217,10 +232,10 @@
     auth.onAuthStateChanged(user => {
         currentUser = user;
         if (user) {
-            document.getElementById('navRegister').innerText = "Register Profile";
+            document.getElementById('navRegister').innerHTML = '<i class="fas fa-user-edit"></i> Register Profile';
             document.getElementById('navLogout').style.display = 'flex';
         } else {
-            document.getElementById('navRegister').innerText = "Sign In / Register";
+            document.getElementById('navRegister').innerHTML = '<i class="fas fa-user-plus"></i> Sign In / Register';
             document.getElementById('navLogout').style.display = 'none';
         }
     });
@@ -265,7 +280,7 @@
         });
     }
 
-    // Load Public Profiles on Homepage
+    // Load Public Profiles on Homepage with Icons & Live Status
     database.ref('profiles').on('value', snapshot => {
         const feed = document.getElementById('userFeed');
         feed.innerHTML = '';
@@ -278,7 +293,7 @@
 
         Object.keys(data).forEach(key => {
             const user = data[key];
-            if (user.reports >= 7) return; // Delete/Hide after 7 reports
+            if (user.reports >= 7) return; // Delete after 7 reports
 
             let photosHTML = '';
             if (user.photos) {
@@ -306,17 +321,34 @@
                 <div class="user-header">
                     <img src="${user.avatar}" class="user-avatar" alt="Avatar">
                     <div>
-                        <h4 style="font-size: 1.05rem;">${user.name} <span style="font-size: 0.8rem; color: var(--text-sub);">(${user.age} yrs)</span></h4>
-                        <div style="font-size: 0.8rem; color: var(--text-sub);"><i class="fas fa-phone"></i> ${user.phone}</div>
+                        <h4 style="font-size: 1.05rem;">
+                            ${user.name} 
+                            <span class="user-tag"><i class="fas fa-check-circle"></i> Registered</span>
+                        </h4>
+                        <div style="font-size: 0.85rem; color: var(--text-sub); margin-top: 2px;">
+                            <i class="fas fa-calendar-alt"></i> Age: ${user.age} yrs
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-sub); margin-top: 2px;">
+                            <i class="fas fa-phone-alt"></i> ${user.phone}
+                        </div>
                         <button class="sub-btn ${isSubbed ? 'subscribed' : ''}" onclick="toggleSubscribe('${user.uid}')">
+                            <i class="${isSubbed ? 'fas fa-bell-slash' : 'fas fa-bell'}"></i> 
                             ${isSubbed ? 'Subscribed' : 'Subscribe'} (${user.subscribers || 0})
                         </button>
                     </div>
                 </div>
-                <p style="font-size: 0.85rem; margin-top: 10px; color: #ddd;">${user.about}</p>
+                
+                <div style="margin-top: 12px; background: #141414; padding: 10px; border-radius: 6px; font-size: 0.85rem;">
+                    <strong><i class="fas fa-user-tag"></i> About:</strong>
+                    <p style="color: var(--text-sub); margin-top: 4px;">${user.about}</p>
+                </div>
+
                 <div class="photo-grid">${photosHTML}</div>
+                
                 <div style="text-align: right;">
-                    <button class="report-btn" onclick="reportAccount('${user.uid}')"><i class="fas fa-flag"></i> Report Account (${user.reports || 0}/7)</button>
+                    <button class="report-btn" onclick="reportAccount('${user.uid}')">
+                        <i class="fas fa-flag"></i> Report Account (${user.reports || 0}/7)
+                    </button>
                 </div>
             `;
             feed.appendChild(card);
