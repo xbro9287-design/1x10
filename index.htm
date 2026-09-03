@@ -6,102 +6,148 @@
     <title>Joylix Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDK v8 (Realtime Database Only) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        :root {
-            --bg-color: #0d0d0d;
-            --card-bg: #1a1a1a;
-            --accent-pink: #ff1493;
-            --text-color: #ffffff;
-            --text-sub: #b0b0b0;
-            --border-color: #333333;
+        :root { 
+            --bg-color: #0d0d0d; 
+            --card-bg: #1a1a1a; 
+            --accent-pink: #ff1493; 
+            --text-color: #ffffff; 
+            --text-sub: #b0b0b0; 
+            --border-color: #333333; 
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; min-height: 100vh; }
-
-        .app-container {
-            width: 100%; max-width: 480px; background-color: #000; min-height: 100vh;
-            border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);
-            position: relative; padding-bottom: 70px; overflow-x: hidden;
+        
+        .app-container { 
+            width: 100%; 
+            max-width: 480px; 
+            background-color: #000; 
+            min-height: 100vh; 
+            border-left: 1px solid var(--border-color); 
+            border-right: 1px solid var(--border-color); 
+            position: relative; 
+            padding-bottom: 70px; 
         }
-
-        header {
-            display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;
-            background-color: rgba(13, 13, 13, 0.95); position: sticky; top: 0; z-index: 100;
-            border-bottom: 1px solid var(--border-color);
+        
+        header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 14px 18px; 
+            background-color: rgba(13, 13, 13, 0.95); 
+            border-bottom: 1px solid var(--border-color); 
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-
-        .logo { background-color: var(--accent-pink); color: #fff; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
-        .menu-btn { background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 4px 8px; }
-
-        .side-menu {
-            position: absolute; top: 55px; right: -250px; width: 220px; background-color: #1a1a1a;
-            border: 1px solid var(--border-color); border-radius: 8px 0 0 8px; box-shadow: -4px 4px 15px rgba(0,0,0,0.5);
-            transition: right 0.3s ease; z-index: 200; display: flex; flex-direction: column; overflow: hidden;
+        
+        .logo { 
+            background-color: var(--accent-pink); 
+            color: #fff; 
+            padding: 5px 12px; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
         }
+        
+        .menu-btn { background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; }
+        
+        .side-menu { 
+            position: absolute; 
+            top: 55px; 
+            right: -250px; 
+            width: 220px; 
+            background-color: #1a1a1a; 
+            border: 1px solid var(--border-color); 
+            transition: right 0.3s ease; 
+            z-index: 200; 
+            display: flex; 
+            flex-direction: column; 
+            border-radius: 0 0 0 10px;
+        }
+        
         .side-menu.active { right: 0; }
-
-        .menu-item {
-            display: flex; align-items: center; gap: 12px; padding: 14px 16px; color: var(--text-color);
-            text-decoration: none; border-bottom: 1px solid #2a2a2a; font-size: 0.9rem; cursor: pointer;
+        
+        .menu-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 14px 16px; 
+            color: var(--text-color); 
+            border-bottom: 1px solid #2a2a2a; 
+            font-size: 0.95rem; 
+            cursor: pointer; 
         }
         .menu-item:hover { background-color: #252525; }
-        .menu-item i { width: 20px; color: var(--accent-pink); text-align: center; }
 
         .page-section { display: none; padding: 16px; }
         .page-section.active { display: block; }
 
         .form-group { margin-bottom: 14px; }
-        .form-group label { display: block; font-size: 0.85rem; margin-bottom: 5px; color: var(--text-sub); }
-        .form-group input, .form-group textarea {
-            width: 100%; padding: 10px; background-color: #141414; border: 1px solid var(--border-color);
-            color: #fff; border-radius: 6px; font-size: 0.9rem;
+        .form-group label { display: block; font-size: 0.85rem; margin-bottom: 6px; color: var(--text-sub); }
+        .form-group input, .form-group textarea { 
+            width: 100%; 
+            padding: 11px; 
+            background-color: #141414; 
+            border: 1px solid var(--border-color); 
+            color: #fff; 
+            border-radius: 6px; 
+            outline: none;
         }
-        .error-msg { color: #ff4d4d; font-size: 0.8rem; margin-top: 4px; display: none; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--accent-pink); }
 
-        .btn-submit {
-            width: 100%; padding: 12px; background-color: var(--accent-pink); color: #fff;
-            border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px;
+        .btn-submit { 
+            width: 100%; 
+            padding: 12px; 
+            background-color: var(--accent-pink); 
+            color: #fff; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 10px;
+            font-size: 0.95rem;
         }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        .user-card {
-            background-color: var(--card-bg); border-radius: 10px; padding: 16px; margin-bottom: 16px;
-            border: 1px solid var(--border-color);
+        .user-card { 
+            background-color: var(--card-bg); 
+            border-radius: 10px; 
+            padding: 16px; 
+            margin-bottom: 16px; 
+            border: 1px solid var(--border-color); 
         }
-        .user-header { display: flex; gap: 14px; align-items: center; }
-        .user-avatar { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-pink); }
-        .user-tag { font-size: 0.75rem; background: #25D366; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 6px; }
-
-        .sub-btn {
-            background-color: var(--accent-pink); color: #fff; border: none; padding: 6px 14px;
-            border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 0.85rem;
+        .user-avatar { 
+            width: 60px; 
+            height: 60px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            border: 2px solid var(--accent-pink); 
         }
-        .sub-btn.subscribed { background-color: #444; }
-
-        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
-        .photo-card { background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #2a2a2a; position: relative; }
-        .photo-card img { width: 100%; height: 120px; object-fit: cover; }
-        .photo-info { padding: 8px; text-align: center; }
-        .photo-price { color: #25D366; font-weight: bold; font-size: 0.9rem; margin: 4px 0; }
+        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+        .photo-card { background: #111; border-radius: 6px; overflow: hidden; border: 1px solid #222; }
+        .photo-card img { width: 100%; height: 110px; object-fit: cover; display: block; }
         
-        .buy-btn {
-            background-color: #25D366; color: #fff; border: none; padding: 6px; width: 100%;
-            border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.8rem;
-            display: flex; align-items: center; justify-content: center; gap: 5px; text-decoration: none;
+        .buy-btn { 
+            background-color: #25D366; 
+            color: #fff; 
+            border: none; 
+            padding: 8px; 
+            width: 100%; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 0.85rem; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 6px; 
+            text-decoration: none; 
         }
-
-        .delete-photo-btn {
-            position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.8); color: white;
-            border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;
-        }
-
-        .report-btn { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 0.8rem; margin-top: 10px; }
-        .back-btn { background: #333; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-bottom: 12px; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -112,198 +158,103 @@
         <button class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
     </header>
 
-    <!-- Navigation Menu -->
     <div class="side-menu" id="sideMenu">
-        <div class="menu-item" onclick="showPage('homePage')"><i class="fas fa-home"></i> Home</div>
-        <div class="menu-item" id="navMyProfile" onclick="showMyProfilePage()" style="display:none;"><i class="fas fa-user"></i> My Profile / Edit</div>
-        <div class="menu-item" id="navRegister" onclick="showRegisterPage()"><i class="fas fa-user-plus"></i> Register Profile</div>
-        <div class="menu-item" onclick="showPage('settingsPage')"><i class="fas fa-cog"></i> Settings</div>
-        <div class="menu-item" id="navLogout" onclick="logout()" style="display:none;"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
+        <div class="menu-item" onclick="showPage('homePage')"><i class="fas fa-home"></i> Home Feed</div>
+        <div class="menu-item" onclick="showPage('registerPage')"><i class="fas fa-user-plus"></i> Register Profile</div>
     </div>
 
     <!-- HOME PAGE -->
     <div id="homePage" class="page-section active">
-        <h3 style="margin-bottom: 12px;"><i class="fas fa-users" style="color: var(--accent-pink);"></i> Live Registered Profiles</h3>
-        <div id="userFeed">
-            <p style="color: var(--text-sub);">Profiles load වෙමින් පවතී...</p>
-        </div>
+        <h3 style="margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-users" style="color: var(--accent-pink);"></i> Active Profiles</h3>
+        <div id="userFeed">Loading profiles...</div>
     </div>
 
     <!-- REGISTER PAGE -->
     <div id="registerPage" class="page-section">
-        <button class="back-btn" onclick="showPage('homePage')"><i class="fas fa-arrow-left"></i> Back to Home</button>
-        <h3><i class="fas fa-id-card" style="color: var(--accent-pink);"></i> Register Profile Page</h3>
-        <p style="color: var(--text-sub); font-size: 0.8rem; margin-bottom: 14px;">ගිණුමක් සෑදීමට Google Sign In වී සිටීම අනිවාර්ය වේ.</p>
+        <h3 style="font-size: 1.1rem;"><i class="fas fa-id-card" style="color: var(--accent-pink);"></i> Direct Registration</h3>
+        <p style="color: var(--text-sub); font-size: 0.8rem; margin-bottom: 16px;">තොරතුරු ඇතුළත් කර Profile එක Create කරගන්න.</p>
 
-        <!-- Auth Status Box -->
-        <div id="authBox" style="background: #181818; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #333;">
-            <p id="authText" style="font-size: 0.85rem; color: #bbb;">Register වීමට පළමුව Sign In වන්න.</p>
-            <button id="googleBtn" onclick="googleLogin()" style="background: #4285F4; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-weight: bold;">
-                <i class="fab fa-google"></i> Sign In with Google
-            </button>
-        </div>
-
-        <form id="regForm" onsubmit="handleRegister(event)" style="display: none;">
+        <form id="regForm" onsubmit="handleRegister(event)">
             <div class="form-group">
-                <label><i class="fas fa-image"></i> Profile Photo (Gallery එකෙන් තෝරන්න)</label>
-                <input type="file" id="regAvatarFile" accept="image/*">
+                <label>Profile Photo *</label>
+                <input type="file" id="regAvatarFile" accept="image/*" required>
             </div>
             <div class="form-group">
-                <label><i class="fas fa-user"></i> නම (Full Name) *</label>
-                <input type="text" id="regName" placeholder="ඔබගේ නම" required>
+                <label>Full Name *</label>
+                <input type="text" id="regName" placeholder="නම" required>
             </div>
             <div class="form-group">
-                <label><i class="fas fa-calendar-alt"></i> වයස (Age) *</label>
-                <input type="number" id="regAge" placeholder="18 හෝ ඊට වැඩි" required>
-                <div id="ageError" class="error-msg">වයස 18 ට අඩු අයට Register විය නොහැක!</div>
+                <label>Age *</label>
+                <input type="number" id="regAge" placeholder="18+" required>
             </div>
             <div class="form-group">
-                <label><i class="fas fa-phone-alt"></i> Mobile Number / WhatsApp Number *</label>
+                <label>WhatsApp / Phone Number *</label>
                 <input type="text" id="regPhone" placeholder="07XXXXXXXX" required>
             </div>
             <div class="form-group">
-                <label><i class="fas fa-info-circle"></i> About You *</label>
-                <textarea id="regAbout" rows="3" placeholder="ඔබ ගැන විස්තරයක්..." required></textarea>
+                <label>About You *</label>
+                <textarea id="regAbout" rows="3" placeholder="විස්තරයක් ඇතුළත් කරන්න..." required></textarea>
             </div>
 
-            <hr style="border-color: #222; margin: 15px 0;">
-            <h4><i class="fas fa-images"></i> Photos with Prices (Packages)</h4>
+            <hr style="border-color: #222; margin: 18px 0;">
+            <h4 style="font-size: 0.95rem;">Package Details (Optional)</h4>
 
             <div class="form-group" style="margin-top: 10px;">
-                <label>Photo 1 File & Price (LKR)</label>
-                <input type="file" id="p1File" accept="image/*" style="margin-bottom: 5px;">
+                <label>Package Photo 1 & Price (LKR)</label>
+                <input type="file" id="p1File" accept="image/*" style="margin-bottom: 6px;">
                 <input type="number" id="p1Price" placeholder="Price (eg: 1500)">
-            </div>
-            <div class="form-group">
-                <label>Photo 2 File & Price (LKR)</label>
-                <input type="file" id="p2File" accept="image/*" style="margin-bottom: 5px;">
-                <input type="number" id="p2Price" placeholder="Price (eg: 2500)">
             </div>
 
             <button type="submit" id="saveBtn" class="btn-submit"><i class="fas fa-check-circle"></i> Save Profile</button>
         </form>
     </div>
-
-    <!-- MY PROFILE / EDIT PAGE -->
-    <div id="myProfilePage" class="page-section">
-        <button class="back-btn" onclick="showPage('homePage')"><i class="fas fa-arrow-left"></i> Back to Home</button>
-        <h3><i class="fas fa-user-edit" style="color: var(--accent-pink);"></i> My Profile Dashboard</h3>
-        <div id="myProfileContent" style="margin-top: 15px;"></div>
-    </div>
-
-    <!-- SETTINGS PAGE -->
-    <div id="settingsPage" class="page-section">
-        <button class="back-btn" onclick="showPage('homePage')"><i class="fas fa-arrow-left"></i> Back to Home</button>
-        <h3><i class="fas fa-cog" style="color: var(--accent-pink);"></i> Settings & Guidelines</h3>
-        <div style="background: #141414; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 14px;">
-            <p style="margin-bottom: 12px; font-size: 0.9rem;"><i class="fas fa-trophy" style="color: #ffd700;"></i> <strong>Subscribe Rewards:</strong> Subscribe ලක්ෂය (100,000) පෙනුණාට පස්සේ ත්‍යාග ලැබෙනවා.</p>
-            <p style="color: #ff4d4d; font-size: 0.9rem;"><i class="fas fa-exclamation-triangle"></i> <strong>Account Termination:</strong> Report 7ක් වැටුණොත් එකවුන්ට් එක අයින් වෙනවා (Delete වේ).</p>
-        </div>
-    </div>
 </div>
 
 <script>
+    // Firebase Realtime Database Configuration
     const firebaseConfig = {
-        apiKey: "AIzaSyC7Yx0UkpU_XNE_wM3aXzwopaaJ2YYbSJU",
-        authDomain: "xsri-e468b.firebaseapp.com",
-        databaseURL: "https://xsri-e468b-default-rtdb.firebaseio.com",
-        projectId: "xsri-e468b",
-        storageBucket: "xsri-e468b.firebasestorage.app",
-        messagingSenderId: "857981291104",
-        appId: "1:857981291104:web:2da412c4546b06a6ff9105",
-        measurementId: "G-TY50B7M6P7"
+        databaseURL: "https://xsri-e468b-default-rtdb.firebaseio.com"
     };
 
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
-    const auth = firebase.auth();
-    const provider = new firebase.auth.GoogleAuthProvider();
 
-    let currentUser = null;
-
-    function toggleMenu() {
-        document.getElementById('sideMenu').classList.toggle('active');
+    function toggleMenu() { 
+        document.getElementById('sideMenu').classList.toggle('active'); 
     }
-
-    function showPage(pageId) {
-        document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+    
+    function showPage(pageId) { 
+        document.querySelectorAll('.page-section').forEach(e => e.classList.remove('active')); 
         document.getElementById(pageId).classList.add('active');
         document.getElementById('sideMenu').classList.remove('active');
     }
 
-    function showRegisterPage() {
-        showPage('registerPage');
-    }
-
-    function showMyProfilePage() {
-        showPage('myProfilePage');
-        loadMyProfileDetails();
-    }
-
-    function googleLogin() {
-        auth.signInWithPopup(provider).catch(err => {
-            alert("Login Error: " + err.message);
-        });
-    }
-
-    // Convert Image File to Base64 (No Firebase Storage Needed)
-    function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            if (!file) { resolve(null); return; }
+    // Auto Image Compression to Base64 (Prevents DB bloat & UI Freezing)
+    function compressImg(file) {
+        return new Promise(resolve => {
+            if (!file) return resolve(null);
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
+            reader.onload = e => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 400;
+                    canvas.height = (img.height * 400) / img.width;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                };
+            };
         });
     }
 
-    auth.onAuthStateChanged(user => {
-        currentUser = user;
-        const regForm = document.getElementById('regForm');
-        const authText = document.getElementById('authText');
-        const googleBtn = document.getElementById('googleBtn');
-
-        if (user) {
-            authText.innerHTML = `<span style="color:#25D366;"><i class="fas fa-check-circle"></i> Logged in: <strong>${user.displayName || user.email}</strong></span>`;
-            googleBtn.style.display = 'none';
-            regForm.style.display = 'block';
-            document.getElementById('navLogout').style.display = 'flex';
-            document.getElementById('navMyProfile').style.display = 'flex';
-
-            database.ref('users/' + user.uid).once('value', snapshot => {
-                const myData = snapshot.val();
-                if (myData) {
-                    document.getElementById('regName').value = myData.name || user.displayName || '';
-                    document.getElementById('regAge').value = myData.age || '';
-                    document.getElementById('regPhone').value = myData.phone || '';
-                    document.getElementById('regAbout').value = myData.about || '';
-                } else {
-                    document.getElementById('regName').value = user.displayName || '';
-                }
-            });
-        } else {
-            authText.innerText = "Register වීමට පළමුව Sign In වන්න.";
-            googleBtn.style.display = 'inline-block';
-            regForm.style.display = 'none';
-            document.getElementById('navLogout').style.display = 'none';
-            document.getElementById('navMyProfile').style.display = 'none';
-        }
-    });
-
+    // Submit Handler
     async function handleRegister(e) {
         e.preventDefault();
         const age = parseInt(document.getElementById('regAge').value);
-        if (age < 18) {
-            document.getElementById('ageError').style.display = 'block';
-            return;
-        } else {
-            document.getElementById('ageError').style.display = 'none';
-        }
-
-        if (!currentUser) {
-            alert("කරුණාකර පළමුව Sign In වන්න.");
-            return;
-        }
+        if (age < 18) return alert("වයස 18ට අඩු අයට Register විය නොහැක!");
 
         const saveBtn = document.getElementById('saveBtn');
         saveBtn.innerText = "Saving Profile...";
@@ -312,45 +263,30 @@
         try {
             const avatarFile = document.getElementById('regAvatarFile').files[0];
             const p1File = document.getElementById('p1File').files[0];
-            const p2File = document.getElementById('p2File').files[0];
 
-            let avatarUrl = currentUser.photoURL || 'https://via.placeholder.com/150';
-            if (avatarFile) {
-                avatarUrl = await fileToBase64(avatarFile);
-            }
-
+            const avatarUrl = await compressImg(avatarFile);
             const photos = [];
+
             if (p1File) {
-                const p1Url = await fileToBase64(p1File);
+                const p1Url = await compressImg(p1File);
                 const price = document.getElementById('p1Price').value || "0";
                 photos.push({ url: p1Url, price: price });
             }
 
-            if (p2File) {
-                const p2Url = await fileToBase64(p2File);
-                const price = document.getElementById('p2Price').value || "0";
-                photos.push({ url: p2Url, price: price });
-            }
+            const newUserId = 'user_' + Date.now();
 
-            const snapshot = await database.ref('users/' + currentUser.uid).once('value');
-            const existingData = snapshot.val() || {};
-
-            const profileData = {
-                uid: currentUser.uid,
+            await database.ref('users/' + newUserId).set({
+                uid: newUserId,
                 name: document.getElementById('regName').value,
                 age: age,
                 phone: document.getElementById('regPhone').value,
                 about: document.getElementById('regAbout').value,
                 avatar: avatarUrl,
-                subscribers: existingData.subscribers || 0,
-                subscribersList: existingData.subscribersList || {},
-                reports: existingData.reports || 0,
-                reportsList: existingData.reportsList || {},
-                photos: photos.length > 0 ? photos : (existingData.photos || [])
-            };
+                photos: photos
+            });
 
-            await database.ref('users/' + currentUser.uid).set(profileData);
-            alert("ඔබගේ Profile එක සාර්ථකව Save විය!");
+            alert("Profile එක සාර්ථකව පද්ධතියට එක් විය!");
+            document.getElementById('regForm').reset();
             showPage('homePage');
         } catch (err) {
             alert("Error: " + err.message);
@@ -360,110 +296,31 @@
         }
     }
 
-    function loadMyProfileDetails() {
-        const container = document.getElementById('myProfileContent');
-        if (!currentUser) {
-            container.innerHTML = '<p>කරුණාකර Sign In වන්න.</p>';
-            return;
-        }
-
-        database.ref('users/' + currentUser.uid).on('value', snapshot => {
-            const data = snapshot.val();
-            if (!data) {
-                container.innerHTML = '<p>ඔබ තවම Profile එකක් සාදා නැත. Register Page වෙත යන්න.</p>';
-                return;
-            }
-
-            let photosHTML = '';
-            if (data.photos) {
-                data.photos.forEach((p, idx) => {
-                    photosHTML += `
-                        <div class="photo-card">
-                            <button class="delete-photo-btn" onclick="deleteMyPhoto(${idx})"><i class="fas fa-times"></i></button>
-                            <img src="${p.url}">
-                            <div class="photo-info">
-                                <div class="photo-price">LKR ${p.price}</div>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-
-            container.innerHTML = `
-                <div class="user-card">
-                    <div class="user-header">
-                        <img src="${data.avatar}" class="user-avatar">
-                        <div>
-                            <h4>${data.name}</h4>
-                            <div style="font-size:0.85rem; color:#bbb;">Phone: ${data.phone}</div>
-                            <div style="font-size:0.85rem; color:#bbb;">Subscribers: ${data.subscribers || 0}</div>
-                        </div>
-                    </div>
-                    <p style="margin-top:10px; font-size:0.85rem; color:#ccc;">${data.about}</p>
-                    <h5 style="margin-top:15px;">Your Package Photos:</h5>
-                    <div class="photo-grid">${photosHTML}</div>
-                    
-                    <div style="margin-top:20px; border-top:1px solid #333; padding-top:15px;">
-                        <h5>අලුතින් Photo එකක් එක් කරන්න:</h5>
-                        <input type="file" id="addPhotoFile" accept="image/*" style="margin-top:5px; margin-bottom:5px;">
-                        <input type="number" id="addPhotoPrice" placeholder="Price (LKR)" style="width:100%; padding:8px; margin-bottom:8px; background:#141414; color:#fff; border:1px solid #333; border-radius:4px;">
-                        <button onclick="addNewPhotoToProfile()" class="btn-submit" style="padding:8px;"><i class="fas fa-plus"></i> Add Photo</button>
-                    </div>
-                </div>
-            `;
-        });
-    }
-
-    async function deleteMyPhoto(index) {
-        if (!confirm("මෙම Photo එක ඉවත් කිරීමට අවශ්‍යද?")) return;
-        const snapshot = await database.ref(`users/${currentUser.uid}/photos`).once('value');
-        let photos = snapshot.val() || [];
-        photos.splice(index, 1);
-        await database.ref(`users/${currentUser.uid}/photos`).set(photos);
-    }
-
-    async function addNewPhotoToProfile() {
-        const file = document.getElementById('addPhotoFile').files[0];
-        const price = document.getElementById('addPhotoPrice').value;
-
-        if (!file || !price) {
-            alert("කරුණාකර Photo එක සහ Price එක ඇතුළත් කරන්න.");
-            return;
-        }
-
-        const url = await fileToBase64(file);
-        const snapshot = await database.ref(`users/${currentUser.uid}/photos`).once('value');
-        let photos = snapshot.val() || [];
-        photos.push({ url: url, price: price });
-        await database.ref(`users/${currentUser.uid}/photos`).set(photos);
-        alert("Photo එක සාර්ථකව එකතු විය!");
-    }
-
+    // Realtime Database Listener for Live Feed Rendering
     database.ref('users').on('value', snapshot => {
         const feed = document.getElementById('userFeed');
         feed.innerHTML = '';
         const data = snapshot.val();
 
         if (!data) {
-            feed.innerHTML = '<p style="color: var(--text-sub);">තවම කිසිදු Account එකක් Register වී නැත.</p>';
+            feed.innerHTML = '<p style="color: var(--text-sub); font-size: 0.9rem;">තවම Profiles නොමැත.</p>';
             return;
         }
 
         Object.keys(data).forEach(key => {
             const user = data[key];
-            if (user.reports >= 7) return;
-
             let photosHTML = '';
-            if (user.photos) {
+            
+            if (user.photos && user.photos.length > 0) {
                 user.photos.forEach(p => {
-                    const waMsg = encodeURIComponent(`Hello, I would like to buy this package for LKR ${p.price}.`);
+                    const waMsg = encodeURIComponent(`Hello ${user.name}, I would like to buy your package for LKR ${p.price}`);
                     photosHTML += `
                         <div class="photo-card">
-                            <img src="${p.url}" alt="Package">
-                            <div class="photo-info">
-                                <div class="photo-price">LKR ${p.price}</div>
+                            <img src="${p.url}">
+                            <div style="padding: 6px; text-align:center;">
+                                <div style="color:#25D366; font-weight:bold; margin-bottom:4px; font-size:0.85rem;">LKR ${p.price}</div>
                                 <a href="https://wa.me/${user.phone}?text=${waMsg}" target="_blank" class="buy-btn">
-                                    <i class="fab fa-whatsapp"></i> Buy Package
+                                    <i class="fab fa-whatsapp"></i> Buy
                                 </a>
                             </div>
                         </div>
@@ -471,100 +328,22 @@
                 });
             }
 
-            const isSubbed = user.subscribersList && currentUser && user.subscribersList[currentUser.uid];
-
             const card = document.createElement('div');
             card.className = 'user-card';
             card.innerHTML = `
-                <div class="user-header">
-                    <img src="${user.avatar}" class="user-avatar" alt="Avatar">
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <img src="${user.avatar}" class="user-avatar">
                     <div>
-                        <h4 style="font-size: 1.05rem;">
-                            ${user.name} 
-                            <span class="user-tag"><i class="fas fa-check-circle"></i> Live</span>
-                        </h4>
-                        <div style="font-size: 0.85rem; color: var(--text-sub); margin-top: 2px;">
-                            <i class="fas fa-calendar-alt"></i> Age: ${user.age} yrs
-                        </div>
-                        <div style="font-size: 0.85rem; color: var(--text-sub); margin-top: 2px;">
-                            <i class="fas fa-phone-alt"></i> ${user.phone}
-                        </div>
-                        <button class="sub-btn ${isSubbed ? 'subscribed' : ''}" onclick="toggleSubscribe('${user.uid}')">
-                            <i class="${isSubbed ? 'fas fa-bell-slash' : 'fas fa-bell'}"></i> 
-                            ${isSubbed ? 'Subscribed' : 'Subscribe'} (${user.subscribers || 0})
-                        </button>
+                        <h4 style="font-size: 1rem;">${user.name}</h4>
+                        <div style="font-size:0.8rem; color:var(--text-sub);">Age: ${user.age} | ${user.phone}</div>
                     </div>
                 </div>
-                
-                <div style="margin-top: 12px; background: #141414; padding: 10px; border-radius: 6px; font-size: 0.85rem;">
-                    <strong>About:</strong>
-                    <p style="color: var(--text-sub); margin-top: 4px;">${user.about}</p>
-                </div>
-
+                <p style="margin-top:10px; font-size:0.85rem; color:#ccc; line-height: 1.3;">${user.about}</p>
                 <div class="photo-grid">${photosHTML}</div>
-                
-                <div style="text-align: right;">
-                    <button class="report-btn" onclick="reportAccount('${user.uid}')">
-                        <i class="fas fa-flag"></i> Report Account (${user.reports || 0}/7)
-                    </button>
-                </div>
             `;
             feed.appendChild(card);
         });
     });
-
-    function toggleSubscribe(targetUid) {
-        if (!currentUser) {
-            alert("Subscribe කිරීමට Register Page එක වෙත ගොස් Sign In වන්න.");
-            return;
-        }
-        const ref = database.ref(`users/${targetUid}`);
-        ref.transaction(user => {
-            if (user) {
-                if (!user.subscribersList) user.subscribersList = {};
-                if (user.subscribersList[currentUser.uid]) {
-                    delete user.subscribersList[currentUser.uid];
-                    user.subscribers = Math.max(0, (user.subscribers || 1) - 1);
-                } else {
-                    user.subscribersList[currentUser.uid] = true;
-                    user.subscribers = (user.subscribers || 0) + 1;
-                }
-            }
-            return user;
-        });
-    }
-
-    function reportAccount(targetUid) {
-        if (!currentUser) {
-            alert("Report කිරීමට Sign In වන්න.");
-            return;
-        }
-        const ref = database.ref(`users/${targetUid}`);
-        ref.transaction(user => {
-            if (user) {
-                if (!user.reportsList) user.reportsList = {};
-                if (user.reportsList[currentUser.uid]) {
-                    alert("ඔබ දැනටමත් මෙම ගිණුමට Report කර ඇත.");
-                    return;
-                }
-                user.reportsList[currentUser.uid] = true;
-                user.reports = (user.reports || 0) + 1;
-                if (user.reports >= 7) {
-                    alert("මෙම ගිණුමට Reports 7ක් පිරුණු බැවින් පද්ධතියෙන් ඉවත් විය.");
-                } else {
-                    alert("Report එක සාර්ථකව සටහන් විය.");
-                }
-            }
-            return user;
-        });
-    }
-
-    function logout() {
-        auth.signOut().then(() => {
-            showPage('homePage');
-        });
-    }
 </script>
-
 </body>
 </html>
