@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joylix - Mobile Navigation & Registration</title>
+    <title>Joylix Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -56,7 +55,6 @@
         .page-section { display: none; padding: 16px; }
         .page-section.active { display: block; }
 
-        /* Form Controls */
         .form-group { margin-bottom: 14px; }
         .form-group label { display: block; font-size: 0.85rem; margin-bottom: 5px; color: var(--text-sub); }
         .form-group input, .form-group textarea {
@@ -70,7 +68,6 @@
             border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px;
         }
 
-        /* Feed Cards */
         .user-card {
             background-color: var(--card-bg); border-radius: 10px; padding: 16px; margin-bottom: 16px;
             border: 1px solid var(--border-color);
@@ -109,7 +106,6 @@
         <button class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
     </header>
 
-    <!-- Side Navigation Menu -->
     <div class="side-menu" id="sideMenu">
         <div class="menu-item" onclick="showPage('homePage')"><i class="fas fa-home"></i> Home</div>
         <div class="menu-item" onclick="showRegisterPage()"><i class="fas fa-user-plus"></i> Register Profile</div>
@@ -117,7 +113,6 @@
         <div class="menu-item" id="navLogout" onclick="logout()" style="display:none;"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
     </div>
 
-    <!-- HOME PAGE (Public Feed) -->
     <div id="homePage" class="page-section active">
         <h3 style="margin-bottom: 12px;"><i class="fas fa-users" style="color: var(--accent-pink);"></i> Live Registered Profiles</h3>
         <div id="userFeed">
@@ -125,13 +120,11 @@
         </div>
     </div>
 
-    <!-- REGISTER PAGE -->
     <div id="registerPage" class="page-section">
         <button class="back-btn" onclick="showPage('homePage')"><i class="fas fa-arrow-left"></i> Back to Home</button>
         <h3><i class="fas fa-id-card" style="color: var(--accent-pink);"></i> Register Profile Page</h3>
         <p style="color: var(--text-sub); font-size: 0.8rem; margin-bottom: 14px;">ගිණුමක් සෑදීමට Google Sign In වී සිටීම අනිවාර්ය වේ.</p>
 
-        <!-- Auth Status Container -->
         <div id="authBox" style="background: #181818; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #333;">
             <p id="authText" style="font-size: 0.85rem; color: #bbb;">Register වීමට පළමුව Sign In වන්න.</p>
             <button id="googleBtn" onclick="googleLogin()" style="background: #4285F4; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-weight: bold;">
@@ -150,12 +143,12 @@
             </div>
             <div class="form-group">
                 <label><i class="fas fa-calendar-alt"></i> වයස (Age) *</label>
-                <input type="number" id="regAge" placeholder="18 හෝ ඊට වැඩි ගණනක්" required>
-                <small style="color: var(--text-sub);">වයස 18 ට වැඩි විය යුතුය. (අඩු අයට Register විය නොහැක)</small>
+                <input type="number" id="regAge" placeholder="18 හෝ ඊට වැඩි" required>
+                <small style="color: var(--text-sub);">වයස 18 ට වැඩි විය යුතුය.</small>
                 <div id="ageError" class="error-msg">වයස 18 ට අඩු අයට Register විය නොහැක!</div>
             </div>
             <div class="form-group">
-                <label><i class="fas fa-phone-alt"></i> Mobile / WhatsApp Number *</label>
+                <label><i class="fas fa-phone-alt"></i> Mobile Number / WhatsApp Number *</label>
                 <input type="text" id="regPhone" placeholder="07XXXXXXXX හෝ 947XXXXXXXX" required>
             </div>
             <div class="form-group">
@@ -181,7 +174,6 @@
         </form>
     </div>
 
-    <!-- SETTINGS PAGE -->
     <div id="settingsPage" class="page-section">
         <button class="back-btn" onclick="showPage('homePage')"><i class="fas fa-arrow-left"></i> Back to Home</button>
         <h3><i class="fas fa-cog" style="color: var(--accent-pink);"></i> Settings & Guidelines</h3>
@@ -193,6 +185,7 @@
 </div>
 
 <script>
+    // ඔබ කලින් ලබා දුන් exact Firebase Config එකම මෙහි ඇත
     const firebaseConfig = {
         databaseURL: "https://xsri-e468b-default-rtdb.firebaseio.com",
         projectId: "xsri-e468b"
@@ -220,8 +213,10 @@
     }
 
     function googleLogin() {
-        auth.signInWithPopup(provider).catch(err => alert("Login Error: " + err.message));
+        auth.signInWithRedirect(provider);
     }
+
+    auth.getRedirectResult().catch(err => console.log(err));
 
     auth.onAuthStateChanged(user => {
         currentUser = user;
@@ -230,10 +225,32 @@
         const googleBtn = document.getElementById('googleBtn');
 
         if (user) {
-            authText.innerHTML = `<span style="color:#25D366;"><i class="fas fa-check-circle"></i> Signed In as: <strong>${user.displayName || user.email}</strong></span>`;
+            authText.innerHTML = `<span style="color:#25D366;"><i class="fas fa-check-circle"></i> Logged in: <strong>${user.displayName || user.email}</strong></span>`;
             googleBtn.style.display = 'none';
             regForm.style.display = 'block';
             document.getElementById('navLogout').style.display = 'flex';
+
+            database.ref('users/' + user.uid).once('value', snapshot => {
+                const myData = snapshot.val();
+                if (myData) {
+                    document.getElementById('regAvatar').value = myData.avatar || user.photoURL || '';
+                    document.getElementById('regName').value = myData.name || user.displayName || '';
+                    document.getElementById('regAge').value = myData.age || '';
+                    document.getElementById('regPhone').value = myData.phone || '';
+                    document.getElementById('regAbout').value = myData.about || '';
+                    if (myData.photos && myData.photos[0]) {
+                        document.getElementById('p1Url').value = myData.photos[0].url || '';
+                        document.getElementById('p1Price').value = myData.photos[0].price || '';
+                    }
+                    if (myData.photos && myData.photos[1]) {
+                        document.getElementById('p2Url').value = myData.photos[1].url || '';
+                        document.getElementById('p2Price').value = myData.photos[1].price || '';
+                    }
+                } else {
+                    document.getElementById('regAvatar').value = user.photoURL || '';
+                    document.getElementById('regName').value = user.displayName || '';
+                }
+            });
         } else {
             authText.innerText = "Register වීමට පළමුව Sign In වන්න.";
             googleBtn.style.display = 'inline-block';
@@ -257,52 +274,54 @@
             return;
         }
 
-        const profileData = {
-            uid: currentUser.uid,
-            name: document.getElementById('regName').value,
-            age: age,
-            phone: document.getElementById('regPhone').value,
-            about: document.getElementById('regAbout').value,
-            avatar: document.getElementById('regAvatar').value,
-            subscribers: 0,
-            reports: 0,
-            photos: [
-                { url: document.getElementById('p1Url').value, price: document.getElementById('p1Price').value }
-            ]
-        };
+        database.ref('users/' + currentUser.uid).once('value', snapshot => {
+            const existingData = snapshot.val() || {};
 
-        const p2Url = document.getElementById('p2Url').value;
-        if (p2Url) {
-            profileData.photos.push({ url: p2Url, price: document.getElementById('p2Price').value });
-        }
+            const profileData = {
+                uid: currentUser.uid,
+                name: document.getElementById('regName').value,
+                age: age,
+                phone: document.getElementById('regPhone').value,
+                about: document.getElementById('regAbout').value,
+                avatar: document.getElementById('regAvatar').value,
+                subscribers: existingData.subscribers || 0,
+                subscribersList: existingData.subscribersList || {},
+                reports: existingData.reports || 0,
+                photos: [
+                    { url: document.getElementById('p1Url').value, price: document.getElementById('p1Price').value }
+                ]
+            };
 
-        database.ref('profiles/' + currentUser.uid).set(profileData).then(() => {
-            alert("ඔබගේ Profile එක සාර්ථකව Register විය!");
-            showPage('homePage');
+            const p2Url = document.getElementById('p2Url').value;
+            if (p2Url) {
+                profileData.photos.push({ url: p2Url, price: document.getElementById('p2Price').value });
+            }
+
+            database.ref('users/' + currentUser.uid).set(profileData).then(() => {
+                alert("ඔබගේ Profile එක සාර්ථකව Register / Save විය!");
+                showPage('homePage');
+            });
         });
     }
 
-    // Public Feed with Live Profiles, Subscribe & WhatsApp Order
-    database.ref('profiles').on('value', snapshot => {
+    database.ref('users').on('value', snapshot => {
         const feed = document.getElementById('userFeed');
         feed.innerHTML = '';
         const data = snapshot.val();
 
         if (!data) {
-            feed.innerHTML = '<p style="color: var(--text-sub);">තවම කිසිදු Profile එකක් Register කර නැත.</p>';
+            feed.innerHTML = '<p style="color: var(--text-sub);">තවම කිසිදු Account එකක් Register වී නැත.</p>';
             return;
         }
 
         Object.keys(data).forEach(key => {
             const user = data[key];
             
-            // Report 7ක් වුණොත් Auto Delete / Hide වීම
             if (user.reports >= 7) return;
 
             let photosHTML = '';
             if (user.photos) {
                 user.photos.forEach(p => {
-                    // English Order Message
                     const waMsg = encodeURIComponent(`Hello, I would like to buy this package for LKR ${p.price}. Image URL: ${p.url}`);
                     photosHTML += `
                         <div class="photo-card">
@@ -365,7 +384,7 @@
             alert("Subscribe කිරීමට Register Page එක වෙත ගොස් Sign In වන්න.");
             return;
         }
-        const ref = database.ref(`profiles/${targetUid}`);
+        const ref = database.ref(`users/${targetUid}`);
         ref.transaction(user => {
             if (user) {
                 if (!user.subscribersList) user.subscribersList = {};
@@ -386,7 +405,7 @@
             alert("Report කිරීමට Register Page එක වෙත ගොස් Sign In වන්න.");
             return;
         }
-        const ref = database.ref(`profiles/${targetUid}`);
+        const ref = database.ref(`users/${targetUid}`);
         ref.transaction(user => {
             if (user) {
                 user.reports = (user.reports || 0) + 1;
