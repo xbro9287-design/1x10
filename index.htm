@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joylix Platform</title>
+    <title>Joylix - Mobile Navigation & Registration</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Firebase SDKs -->
@@ -42,7 +42,7 @@
         .side-menu {
             position: absolute; top: 55px; right: -250px; width: 220px; background-color: #1a1a1a;
             border: 1px solid var(--border-color); border-radius: 8px 0 0 8px; box-shadow: -4px 4px 15px rgba(0,0,0,0.5);
-            transition: right 0.3s ease; z-index: 200; display: flex; flex-direction: column;
+            transition: right 0.3s ease; z-index: 200; display: flex; flex-direction: column; overflow: hidden;
         }
         .side-menu.active { right: 0; }
 
@@ -50,18 +50,13 @@
             display: flex; align-items: center; gap: 12px; padding: 14px 16px; color: var(--text-color);
             text-decoration: none; border-bottom: 1px solid #2a2a2a; font-size: 0.9rem; cursor: pointer;
         }
-        .menu-item i { color: var(--accent-pink); width: 20px; text-align: center; }
+        .menu-item:hover { background-color: #252525; }
+        .menu-item i { width: 20px; color: var(--accent-pink); text-align: center; }
 
         .page-section { display: none; padding: 16px; }
         .page-section.active { display: block; }
 
-        .rewards-banner {
-            background: linear-gradient(135deg, #ff1493 0%, #4b0082 100%);
-            margin-bottom: 16px; padding: 14px; border-radius: 10px; color: #fff;
-            display: flex; align-items: center; gap: 12px;
-        }
-        .rewards-banner i { font-size: 2.2rem; color: #ffd700; }
-
+        /* Form Controls */
         .form-group { margin-bottom: 14px; }
         .form-group label { display: block; font-size: 0.85rem; margin-bottom: 5px; color: var(--text-sub); }
         .form-group input, .form-group textarea {
@@ -75,6 +70,7 @@
             border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px;
         }
 
+        /* Feed Cards */
         .user-card {
             background-color: var(--card-bg); border-radius: 10px; padding: 16px; margin-bottom: 16px;
             border: 1px solid var(--border-color);
@@ -98,7 +94,7 @@
         .buy-btn {
             background-color: #25D366; color: #fff; border: none; padding: 6px; width: 100%;
             border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.8rem;
-            display: flex; align-items: center; justify-content: center; gap: 5px;
+            display: flex; align-items: center; justify-content: center; gap: 5px; text-decoration: none;
         }
 
         .report-btn { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 0.8rem; margin-top: 10px; }
@@ -121,31 +117,23 @@
         <div class="menu-item" id="navLogout" onclick="logout()" style="display:none;"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
     </div>
 
-    <!-- HOME PAGE (Public View - No Auth Needed) -->
+    <!-- HOME PAGE (Public Feed) -->
     <div id="homePage" class="page-section active">
-        <div class="rewards-banner">
-            <i class="fas fa-gift"></i>
-            <div>
-                <h4>🎉 Joylix Rewards & Profiles</h4>
-                <p>Register වී ඔබගේ Packages සහ Profile එක සජීවීව ප්‍රදර්ශනය කරන්න.</p>
-            </div>
-        </div>
-
-        <h3 style="margin-bottom: 12px;"><i class="fas fa-users" style="color: var(--accent-pink);"></i> Registered Profiles</h3>
+        <h3 style="margin-bottom: 12px;"><i class="fas fa-users" style="color: var(--accent-pink);"></i> Live Registered Profiles</h3>
         <div id="userFeed">
             <p style="color: var(--text-sub);">Profiles load වෙමින් පවතී...</p>
         </div>
     </div>
 
-    <!-- REGISTER PAGE (Dedicated Page View) -->
+    <!-- REGISTER PAGE -->
     <div id="registerPage" class="page-section">
         <button class="back-btn" onclick="showPage('homePage')"><i class="fas fa-arrow-left"></i> Back to Home</button>
         <h3><i class="fas fa-id-card" style="color: var(--accent-pink);"></i> Register Profile Page</h3>
-        <p style="color: var(--text-sub); font-size: 0.8rem; margin-bottom: 14px;">ඔබගේ Profile එක සහ Photos විකුණුම් සඳහා එකතු කරන්න.</p>
+        <p style="color: var(--text-sub); font-size: 0.8rem; margin-bottom: 14px;">ගිණුමක් සෑදීමට Google Sign In වී සිටීම අනිවාර්ය වේ.</p>
 
-        <!-- Auth Status Box -->
+        <!-- Auth Status Container -->
         <div id="authBox" style="background: #181818; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #333;">
-            <p id="authText" style="font-size: 0.85rem; color: #bbb;">Profile එක Register කිරීමට Google Sign In වන්න.</p>
+            <p id="authText" style="font-size: 0.85rem; color: #bbb;">Register වීමට පළමුව Sign In වන්න.</p>
             <button id="googleBtn" onclick="googleLogin()" style="background: #4285F4; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-weight: bold;">
                 <i class="fab fa-google"></i> Sign In with Google
             </button>
@@ -153,7 +141,7 @@
 
         <form id="regForm" onsubmit="handleRegister(event)" style="display: none;">
             <div class="form-group">
-                <label><i class="fas fa-image"></i> Profile Photo URL *</label>
+                <label><i class="fas fa-image"></i> Profile Photo URL (හැමෝටම Live පෙනෙන එක) *</label>
                 <input type="url" id="regAvatar" placeholder="https://example.com/photo.jpg" required>
             </div>
             <div class="form-group">
@@ -162,30 +150,30 @@
             </div>
             <div class="form-group">
                 <label><i class="fas fa-calendar-alt"></i> වයස (Age) *</label>
-                <input type="number" id="regAge" placeholder="18 හෝ ඊට වැඩි" required>
-                <small style="color: var(--text-sub);">වයස 18 ට වැඩි විය යුතුය.</small>
+                <input type="number" id="regAge" placeholder="18 හෝ ඊට වැඩි ගණනක්" required>
+                <small style="color: var(--text-sub);">වයස 18 ට වැඩි විය යුතුය. (අඩු අයට Register විය නොහැක)</small>
                 <div id="ageError" class="error-msg">වයස 18 ට අඩු අයට Register විය නොහැක!</div>
             </div>
             <div class="form-group">
-                <label><i class="fas fa-phone-alt"></i> Mobile Number / WhatsApp Number *</label>
+                <label><i class="fas fa-phone-alt"></i> Mobile / WhatsApp Number *</label>
                 <input type="text" id="regPhone" placeholder="07XXXXXXXX හෝ 947XXXXXXXX" required>
             </div>
             <div class="form-group">
                 <label><i class="fas fa-info-circle"></i> About You (තමන්ගේ විස්තර) *</label>
-                <textarea id="regAbout" rows="3" placeholder="ඔබ ගැන කෙටි විස්තරයක්..." required></textarea>
+                <textarea id="regAbout" rows="3" placeholder="ඔබ ගැන විස්තරයක්..." required></textarea>
             </div>
 
             <hr style="border-color: #222; margin: 15px 0;">
-            <h4><i class="fas fa-images"></i> Photos with Packages & Prices</h4>
+            <h4><i class="fas fa-images"></i> Photos with Prices (Packages)</h4>
 
             <div class="form-group" style="margin-top: 10px;">
                 <label>Photo 1 URL & Price (LKR) *</label>
-                <input type="url" id="p1Url" placeholder="Image 1 Link" required style="margin-bottom: 5px;">
+                <input type="url" id="p1Url" placeholder="Image Link 1" required style="margin-bottom: 5px;">
                 <input type="number" id="p1Price" placeholder="Price (eg: 1500)" required>
             </div>
             <div class="form-group">
                 <label>Photo 2 URL & Price (LKR)</label>
-                <input type="url" id="p2Url" placeholder="Image 2 Link" style="margin-bottom: 5px;">
+                <input type="url" id="p2Url" placeholder="Image Link 2" style="margin-bottom: 5px;">
                 <input type="number" id="p2Price" placeholder="Price (eg: 2500)">
             </div>
 
@@ -196,10 +184,10 @@
     <!-- SETTINGS PAGE -->
     <div id="settingsPage" class="page-section">
         <button class="back-btn" onclick="showPage('homePage')"><i class="fas fa-arrow-left"></i> Back to Home</button>
-        <h3><i class="fas fa-cog" style="color: var(--accent-pink);"></i> Settings & Rules</h3>
+        <h3><i class="fas fa-cog" style="color: var(--accent-pink);"></i> Settings & Guidelines</h3>
         <div style="background: #141414; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 14px;">
-            <p style="margin-bottom: 10px;"><i class="fas fa-trophy" style="color: #ffd700;"></i> <strong>Rewards:</strong> Subscribers ලක්ෂයක් (100,000) ලැබුණු පසු විශේෂ ත්‍යාග පිරිනමනු ලැබේ.</p>
-            <p style="color: #ff4d4d;"><i class="fas fa-exclamation-triangle"></i> <strong>Account Policy:</strong> යම් ගිණුමකට Reports 7ක් ලැබුණහොත් එම ගිණුම පද්ධතියෙන් ස්වයංක්‍රීයව අයින් කරනු ලැබේ (Delete වේ).</p>
+            <p style="margin-bottom: 12px; font-size: 0.9rem;"><i class="fas fa-trophy" style="color: #ffd700;"></i> <strong>Subscribe Rewards:</strong> Subscribe ලක්ෂය (100,000) පෙනුණාට පස්සේ ත්‍යාග ලැබෙනවා.</p>
+            <p style="color: #ff4d4d; font-size: 0.9rem;"><i class="fas fa-exclamation-triangle"></i> <strong>Account Termination:</strong> Report 7ක් වැටුණොත් එකවුන්ට් එක අයින් වෙනවා (Delete වේ).</p>
         </div>
     </div>
 </div>
@@ -232,9 +220,7 @@
     }
 
     function googleLogin() {
-        auth.signInWithPopup(provider).catch(err => {
-            alert("Login Error: " + err.message);
-        });
+        auth.signInWithPopup(provider).catch(err => alert("Login Error: " + err.message));
     }
 
     auth.onAuthStateChanged(user => {
@@ -244,12 +230,12 @@
         const googleBtn = document.getElementById('googleBtn');
 
         if (user) {
-            authText.innerHTML = `<span style="color:#25D366;"><i class="fas fa-check-circle"></i> Logged in as: <strong>${user.displayName || user.email}</strong></span>`;
+            authText.innerHTML = `<span style="color:#25D366;"><i class="fas fa-check-circle"></i> Signed In as: <strong>${user.displayName || user.email}</strong></span>`;
             googleBtn.style.display = 'none';
             regForm.style.display = 'block';
             document.getElementById('navLogout').style.display = 'flex';
         } else {
-            authText.innerText = "Profile එක Register කිරීමට Google Sign In වන්න.";
+            authText.innerText = "Register වීමට පළමුව Sign In වන්න.";
             googleBtn.style.display = 'inline-block';
             regForm.style.display = 'none';
             document.getElementById('navLogout').style.display = 'none';
@@ -267,7 +253,7 @@
         }
 
         if (!currentUser) {
-            alert("කරුණාකර පළමුව Google Sign In වන්න.");
+            alert("කරුණාකර පළමුව Sign In වන්න.");
             return;
         }
 
@@ -296,32 +282,35 @@
         });
     }
 
-    // Public Feed Load - No Login Required
+    // Public Feed with Live Profiles, Subscribe & WhatsApp Order
     database.ref('profiles').on('value', snapshot => {
         const feed = document.getElementById('userFeed');
         feed.innerHTML = '';
         const data = snapshot.val();
 
         if (!data) {
-            feed.innerHTML = '<p style="color: var(--text-sub);">කිසිදු Profile එකක් තවම නැත. පළමු Profile එක Register කරන්න!</p>';
+            feed.innerHTML = '<p style="color: var(--text-sub);">තවම කිසිදු Profile එකක් Register කර නැත.</p>';
             return;
         }
 
         Object.keys(data).forEach(key => {
             const user = data[key];
+            
+            // Report 7ක් වුණොත් Auto Delete / Hide වීම
             if (user.reports >= 7) return;
 
             let photosHTML = '';
             if (user.photos) {
                 user.photos.forEach(p => {
+                    // English Order Message
                     const waMsg = encodeURIComponent(`Hello, I would like to buy this package for LKR ${p.price}. Image URL: ${p.url}`);
                     photosHTML += `
                         <div class="photo-card">
                             <img src="${p.url}" alt="Package">
                             <div class="photo-info">
                                 <div class="photo-price">LKR ${p.price}</div>
-                                <a href="https://wa.me/${user.phone}?text=${waMsg}" target="_blank" style="text-decoration:none;">
-                                    <button class="buy-btn"><i class="fab fa-whatsapp"></i> Buy Package</button>
+                                <a href="https://wa.me/${user.phone}?text=${waMsg}" target="_blank" class="buy-btn">
+                                    <i class="fab fa-whatsapp"></i> Buy Package
                                 </a>
                             </div>
                         </div>
@@ -339,7 +328,7 @@
                     <div>
                         <h4 style="font-size: 1.05rem;">
                             ${user.name} 
-                            <span class="user-tag"><i class="fas fa-check-circle"></i> Registered</span>
+                            <span class="user-tag"><i class="fas fa-check-circle"></i> Live</span>
                         </h4>
                         <div style="font-size: 0.85rem; color: var(--text-sub); margin-top: 2px;">
                             <i class="fas fa-calendar-alt"></i> Age: ${user.age} yrs
@@ -355,7 +344,7 @@
                 </div>
                 
                 <div style="margin-top: 12px; background: #141414; padding: 10px; border-radius: 6px; font-size: 0.85rem;">
-                    <strong><i class="fas fa-user-tag"></i> About:</strong>
+                    <strong>About:</strong>
                     <p style="color: var(--text-sub); margin-top: 4px;">${user.about}</p>
                 </div>
 
@@ -373,7 +362,7 @@
 
     function toggleSubscribe(targetUid) {
         if (!currentUser) {
-            alert("Subscribe කිරීමට කරුණාකර Register Page එකට ගොස් Sign In වන්න.");
+            alert("Subscribe කිරීමට Register Page එක වෙත ගොස් Sign In වන්න.");
             return;
         }
         const ref = database.ref(`profiles/${targetUid}`);
@@ -394,7 +383,7 @@
 
     function reportAccount(targetUid) {
         if (!currentUser) {
-            alert("Report කිරීමට කරුණාකර Register Page එකට ගොස් Sign In වන්න.");
+            alert("Report කිරීමට Register Page එක වෙත ගොස් Sign In වන්න.");
             return;
         }
         const ref = database.ref(`profiles/${targetUid}`);
