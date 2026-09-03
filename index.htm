@@ -6,6 +6,7 @@
     <title>Joylix Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -106,6 +107,7 @@
         <button class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
     </header>
 
+    <!-- Navigation Menu -->
     <div class="side-menu" id="sideMenu">
         <div class="menu-item" onclick="showPage('homePage')"><i class="fas fa-home"></i> Home</div>
         <div class="menu-item" onclick="showRegisterPage()"><i class="fas fa-user-plus"></i> Register Profile</div>
@@ -113,6 +115,7 @@
         <div class="menu-item" id="navLogout" onclick="logout()" style="display:none;"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
     </div>
 
+    <!-- HOME PAGE -->
     <div id="homePage" class="page-section active">
         <h3 style="margin-bottom: 12px;"><i class="fas fa-users" style="color: var(--accent-pink);"></i> Live Registered Profiles</h3>
         <div id="userFeed">
@@ -120,11 +123,13 @@
         </div>
     </div>
 
+    <!-- REGISTER PAGE -->
     <div id="registerPage" class="page-section">
         <button class="back-btn" onclick="showPage('homePage')"><i class="fas fa-arrow-left"></i> Back to Home</button>
         <h3><i class="fas fa-id-card" style="color: var(--accent-pink);"></i> Register Profile Page</h3>
         <p style="color: var(--text-sub); font-size: 0.8rem; margin-bottom: 14px;">ගිණුමක් සෑදීමට Google Sign In වී සිටීම අනිවාර්ය වේ.</p>
 
+        <!-- Auth Status Box -->
         <div id="authBox" style="background: #181818; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #333;">
             <p id="authText" style="font-size: 0.85rem; color: #bbb;">Register වීමට පළමුව Sign In වන්න.</p>
             <button id="googleBtn" onclick="googleLogin()" style="background: #4285F4; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-weight: bold;">
@@ -134,7 +139,7 @@
 
         <form id="regForm" onsubmit="handleRegister(event)" style="display: none;">
             <div class="form-group">
-                <label><i class="fas fa-image"></i> Profile Photo URL (හැමෝටම Live පෙනෙන එක) *</label>
+                <label><i class="fas fa-image"></i> Profile Photo URL *</label>
                 <input type="url" id="regAvatar" placeholder="https://example.com/photo.jpg" required>
             </div>
             <div class="form-group">
@@ -144,15 +149,14 @@
             <div class="form-group">
                 <label><i class="fas fa-calendar-alt"></i> වයස (Age) *</label>
                 <input type="number" id="regAge" placeholder="18 හෝ ඊට වැඩි" required>
-                <small style="color: var(--text-sub);">වයස 18 ට වැඩි විය යුතුය.</small>
                 <div id="ageError" class="error-msg">වයස 18 ට අඩු අයට Register විය නොහැක!</div>
             </div>
             <div class="form-group">
                 <label><i class="fas fa-phone-alt"></i> Mobile Number / WhatsApp Number *</label>
-                <input type="text" id="regPhone" placeholder="07XXXXXXXX හෝ 947XXXXXXXX" required>
+                <input type="text" id="regPhone" placeholder="07XXXXXXXX" required>
             </div>
             <div class="form-group">
-                <label><i class="fas fa-info-circle"></i> About You (තමන්ගේ විස්තර) *</label>
+                <label><i class="fas fa-info-circle"></i> About You *</label>
                 <textarea id="regAbout" rows="3" placeholder="ඔබ ගැන විස්තරයක්..." required></textarea>
             </div>
 
@@ -170,10 +174,11 @@
                 <input type="number" id="p2Price" placeholder="Price (eg: 2500)">
             </div>
 
-            <button type="submit" class="btn-submit"><i class="fas fa-check-circle"></i> Complete Registration</button>
+            <button type="submit" class="btn-submit"><i class="fas fa-check-circle"></i> Save Profile</button>
         </form>
     </div>
 
+    <!-- SETTINGS PAGE -->
     <div id="settingsPage" class="page-section">
         <button class="back-btn" onclick="showPage('homePage')"><i class="fas fa-arrow-left"></i> Back to Home</button>
         <h3><i class="fas fa-cog" style="color: var(--accent-pink);"></i> Settings & Guidelines</h3>
@@ -185,10 +190,15 @@
 </div>
 
 <script>
-    // ඔබ කලින් ලබා දුන් exact Firebase Config එකම මෙහි ඇත
     const firebaseConfig = {
+        apiKey: "AIzaSyC7Yx0UkpU_XNE_wM3aXzwopaaJ2YYbSJU",
+        authDomain: "xsri-e468b.firebaseapp.com",
         databaseURL: "https://xsri-e468b-default-rtdb.firebaseio.com",
-        projectId: "xsri-e468b"
+        projectId: "xsri-e468b",
+        storageBucket: "xsri-e468b.firebasestorage.app",
+        messagingSenderId: "857981291104",
+        appId: "1:857981291104:web:2da412c4546b06a6ff9105",
+        measurementId: "G-TY50B7M6P7"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -213,10 +223,10 @@
     }
 
     function googleLogin() {
-        auth.signInWithRedirect(provider);
+        auth.signInWithPopup(provider).catch(err => {
+            alert("Login Error: " + err.message);
+        });
     }
-
-    auth.getRedirectResult().catch(err => console.log(err));
 
     auth.onAuthStateChanged(user => {
         currentUser = user;
@@ -298,7 +308,7 @@
             }
 
             database.ref('users/' + currentUser.uid).set(profileData).then(() => {
-                alert("ඔබගේ Profile එක සාර්ථකව Register / Save විය!");
+                alert("ඔබගේ Profile එක සාර්ථකව Save විය!");
                 showPage('homePage');
             });
         });
@@ -316,7 +326,6 @@
 
         Object.keys(data).forEach(key => {
             const user = data[key];
-            
             if (user.reports >= 7) return;
 
             let photosHTML = '';
