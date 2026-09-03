@@ -6,7 +6,7 @@
     <title>Joylix Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDK v8 (Realtime Database Only) -->
+    <!-- Firebase SDK v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -121,6 +121,7 @@
             padding: 16px; 
             margin-bottom: 16px; 
             border: 1px solid var(--border-color); 
+            position: relative;
         }
         .user-avatar { 
             width: 60px; 
@@ -148,6 +149,27 @@
             gap: 6px; 
             text-decoration: none; 
         }
+
+        .delete-btn {
+            background-color: #ff3333;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-top: 12px;
+            width: 100%;
+        }
+
+        .settings-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 18px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -160,24 +182,25 @@
 
     <div class="side-menu" id="sideMenu">
         <div class="menu-item" onclick="showPage('homePage')"><i class="fas fa-home"></i> Home Feed</div>
-        <div class="menu-item" onclick="showPage('registerPage')"><i class="fas fa-user-plus"></i> Register Profile</div>
+        <div class="menu-item" onclick="showPage('registerPage')"><i class="fas fa-user-edit"></i> Profile Settings</div>
+        <div class="menu-item" onclick="showPage('settingsPage')"><i class="fas fa-cog"></i> Platform Settings</div>
     </div>
 
     <!-- HOME PAGE -->
     <div id="homePage" class="page-section active">
-        <h3 style="margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-users" style="color: var(--accent-pink);"></i> Active Profiles</h3>
+        <h3 style="margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-users" style="color: var(--accent-pink);"></i> Live Profiles</h3>
         <div id="userFeed">Loading profiles...</div>
     </div>
 
-    <!-- REGISTER PAGE -->
+    <!-- REGISTER & EDIT PAGE -->
     <div id="registerPage" class="page-section">
-        <h3 style="font-size: 1.1rem;"><i class="fas fa-id-card" style="color: var(--accent-pink);"></i> Direct Registration</h3>
-        <p style="color: var(--text-sub); font-size: 0.8rem; margin-bottom: 16px;">තොරතුරු ඇතුළත් කර Profile එක Create කරගන්න.</p>
+        <h3 style="font-size: 1.1rem;"><i class="fas fa-id-card" style="color: var(--accent-pink);"></i> Profile Setup / Edit</h3>
+        <p style="color: var(--text-sub); font-size: 0.8rem; margin-bottom: 16px;">ඔබගේ විස්තර ඇතුළත් කරන්න හෝ වෙනස් කරන්න.</p>
 
         <form id="regForm" onsubmit="handleRegister(event)">
             <div class="form-group">
                 <label>Profile Photo *</label>
-                <input type="file" id="regAvatarFile" accept="image/*" required>
+                <input type="file" id="regAvatarFile" accept="image/*">
             </div>
             <div class="form-group">
                 <label>Full Name *</label>
@@ -208,10 +231,22 @@
             <button type="submit" id="saveBtn" class="btn-submit"><i class="fas fa-check-circle"></i> Save Profile</button>
         </form>
     </div>
+
+    <!-- SETTINGS PAGE -->
+    <div id="settingsPage" class="page-section">
+        <h3 style="font-size: 1.1rem;"><i class="fas fa-sliders-h" style="color: var(--accent-pink);"></i> Settings</h3>
+        
+        <div class="settings-card">
+            <h4 style="color: var(--accent-pink); margin-bottom: 8px;"><i class="fas fa-star"></i> Highlight Your Account</h4>
+            <p style="font-size: 0.85rem; color: var(--text-sub); line-height: 1.4; margin-bottom: 14px;">
+                අප වෙත ගෙවීම් සිදු කිරීමෙන් පසු ඔබගේ Account එක සියලු දෙනාට විශේෂයෙන් කැපී පෙනෙන ලෙස (Highlight) සකස් කර දෙනු ලැබේ.
+            </p>
+            <button class="btn-submit" style="background-color: #ffd700; color: #000;"><i class="fas fa-crown"></i> Buy Highlight</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    // Firebase Realtime Database Configuration
     const firebaseConfig = {
         databaseURL: "https://xsri-e468b-default-rtdb.firebaseio.com"
     };
@@ -229,7 +264,6 @@
         document.getElementById('sideMenu').classList.remove('active');
     }
 
-    // Auto Image Compression to Base64 (Prevents DB bloat & UI Freezing)
     function compressImg(file) {
         return new Promise(resolve => {
             if (!file) return resolve(null);
@@ -250,33 +284,52 @@
         });
     }
 
-    // Submit Handler
     async function handleRegister(e) {
         e.preventDefault();
         const age = parseInt(document.getElementById('regAge').value);
         if (age < 18) return alert("වයස 18ට අඩු අයට Register විය නොහැක!");
 
         const saveBtn = document.getElementById('saveBtn');
-        saveBtn.innerText = "Saving Profile...";
+        saveBtn.innerText = "Saving...";
         saveBtn.disabled = true;
 
         try {
+            let myUserId = localStorage.getItem('joylix_my_user_id');
+            if (!myUserId) {
+                myUserId = 'user_' + Date.now();
+                localStorage.setItem('joylix_my_user_id', myUserId);
+            }
+
             const avatarFile = document.getElementById('regAvatarFile').files[0];
             const p1File = document.getElementById('p1File').files[0];
 
-            const avatarUrl = await compressImg(avatarFile);
-            const photos = [];
+            let avatarUrl = null;
+            if (avatarFile) {
+                avatarUrl = await compressImg(avatarFile);
+            } else {
+                const snap = await database.ref('users/' + myUserId).once('value');
+                if (snap.exists()) avatarUrl = snap.val().avatar;
+            }
 
+            const photos = [];
             if (p1File) {
                 const p1Url = await compressImg(p1File);
                 const price = document.getElementById('p1Price').value || "0";
                 photos.push({ url: p1Url, price: price });
+            } else {
+                const snap = await database.ref('users/' + myUserId).once('value');
+                if (snap.exists() && snap.val().photos) photos.push(...snap.val().photos);
             }
 
-            const newUserId = 'user_' + Date.now();
+            if (!avatarUrl) {
+                alert("Please select a profile photo!");
+                saveBtn.innerText = "Save Profile";
+                saveBtn.disabled = false;
+                return;
+            }
 
-            await database.ref('users/' + newUserId).set({
-                uid: newUserId,
+            await database.ref('users/' + myUserId).set({
+                uid: myUserId,
                 name: document.getElementById('regName').value,
                 age: age,
                 phone: document.getElementById('regPhone').value,
@@ -285,8 +338,7 @@
                 photos: photos
             });
 
-            alert("Profile එක සාර්ථකව පද්ධතියට එක් විය!");
-            document.getElementById('regForm').reset();
+            alert("Profile එක සාර්ථකව Update විය!");
             showPage('homePage');
         } catch (err) {
             alert("Error: " + err.message);
@@ -296,11 +348,19 @@
         }
     }
 
-    // Realtime Database Listener for Live Feed Rendering
+    async function deleteMyProfile(uid) {
+        if (confirm("ඔබගේ Profile එක පද්ධතියෙන් සම්පූර්ණයෙන්ම ඉවත් කිරීමට අවශ්‍යද?")) {
+            await database.ref('users/' + uid).remove();
+            localStorage.removeItem('joylix_my_user_id');
+            alert("Profile එක සාර්ථකව ඉවත් කරන ලදී.");
+        }
+    }
+
     database.ref('users').on('value', snapshot => {
         const feed = document.getElementById('userFeed');
         feed.innerHTML = '';
         const data = snapshot.val();
+        const myUserId = localStorage.getItem('joylix_my_user_id');
 
         if (!data) {
             feed.innerHTML = '<p style="color: var(--text-sub); font-size: 0.9rem;">තවම Profiles නොමැත.</p>';
@@ -328,18 +388,22 @@
                 });
             }
 
+            const isOwner = (myUserId && myUserId === user.uid);
+            const deleteBtnHTML = isOwner ? `<button class="delete-btn" onclick="deleteMyProfile('${user.uid}')"><i class="fas fa-trash"></i> Delete My Profile</button>` : '';
+
             const card = document.createElement('div');
             card.className = 'user-card';
             card.innerHTML = `
                 <div style="display:flex; gap:12px; align-items:center;">
                     <img src="${user.avatar}" class="user-avatar">
                     <div>
-                        <h4 style="font-size: 1rem;">${user.name}</h4>
+                        <h4 style="font-size: 1rem;">${user.name} ${isOwner ? '<span style="color:var(--accent-pink); font-size:0.75rem;">(You)</span>' : ''}</h4>
                         <div style="font-size:0.8rem; color:var(--text-sub);">Age: ${user.age} | ${user.phone}</div>
                     </div>
                 </div>
                 <p style="margin-top:10px; font-size:0.85rem; color:#ccc; line-height: 1.3;">${user.about}</p>
                 <div class="photo-grid">${photosHTML}</div>
+                ${deleteBtnHTML}
             `;
             feed.appendChild(card);
         });
