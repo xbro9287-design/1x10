@@ -75,11 +75,12 @@
     <header>
         <div class="logo">Joylix</div>
         
-        <!-- Google Sign-In Container (ඔබගේ Client ID එක ඇතුළත් කර ඇත) -->
+        <!-- Google Sign-In Container (Popup Mode එක සහ Client ID එක එකතු කර ඇත) -->
         <div id="g_id_onload"
              data-client_id="857981291104-00qe8tm5enjo2anadsehq2rarl59o8fu.apps.googleusercontent.com"
              data-callback="handleCredentialResponse"
-             data-auto_prompt="false">
+             data-auto_select="false"
+             data-ux_mode="popup">
         </div>
         
         <div class="g_id_signin" id="googleBtn" data-type="standard" data-size="medium" data-theme="dark" data-text="sign_in_with"></div>
