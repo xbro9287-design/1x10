@@ -10,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
     <style>
         :root {
@@ -84,7 +85,7 @@
         .sub-btn.subscribed { background-color: #444; }
 
         .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
-        .photo-card { background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #2a2a2a; }
+        .photo-card { background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #2a2a2a; position: relative; }
         .photo-card img { width: 100%; height: 120px; object-fit: cover; }
         .photo-info { padding: 8px; text-align: center; }
         .photo-price { color: #25D366; font-weight: bold; font-size: 0.9rem; margin: 4px 0; }
@@ -95,8 +96,17 @@
             display: flex; align-items: center; justify-content: center; gap: 5px; text-decoration: none;
         }
 
+        .delete-photo-btn {
+            position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.8); color: white;
+            border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;
+        }
+
         .report-btn { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 0.8rem; margin-top: 10px; }
         .back-btn { background: #333; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-bottom: 12px; font-size: 0.85rem; }
+        
+        .loader {
+            display: none; color: var(--accent-pink); font-size: 0.85rem; margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -110,7 +120,8 @@
     <!-- Navigation Menu -->
     <div class="side-menu" id="sideMenu">
         <div class="menu-item" onclick="showPage('homePage')"><i class="fas fa-home"></i> Home</div>
-        <div class="menu-item" onclick="showRegisterPage()"><i class="fas fa-user-plus"></i> Register Profile</div>
+        <div class="menu-item" id="navMyProfile" onclick="showMyProfilePage()" style="display:none;"><i class="fas fa-user"></i> My Profile / Edit</div>
+        <div class="menu-item" id="navRegister" onclick="showRegisterPage()"><i class="fas fa-user-plus"></i> Register Profile</div>
         <div class="menu-item" onclick="showPage('settingsPage')"><i class="fas fa-cog"></i> Settings</div>
         <div class="menu-item" id="navLogout" onclick="logout()" style="display:none;"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
     </div>
@@ -139,8 +150,9 @@
 
         <form id="regForm" onsubmit="handleRegister(event)" style="display: none;">
             <div class="form-group">
-                <label><i class="fas fa-image"></i> Profile Photo URL *</label>
-                <input type="url" id="regAvatar" placeholder="https://example.com/photo.jpg" required>
+                <label><i class="fas fa-image"></i> Profile Photo (Gallery එකෙන් තෝරන්න) *</label>
+                <input type="file" id="regAvatarFile" accept="image/*" required>
+                <div class="loader" id="avatarLoader">Photo uploading...</div>
             </div>
             <div class="form-group">
                 <label><i class="fas fa-user"></i> නම (Full Name) *</label>
@@ -164,18 +176,25 @@
             <h4><i class="fas fa-images"></i> Photos with Prices (Packages)</h4>
 
             <div class="form-group" style="margin-top: 10px;">
-                <label>Photo 1 URL & Price (LKR) *</label>
-                <input type="url" id="p1Url" placeholder="Image Link 1" required style="margin-bottom: 5px;">
+                <label>Photo 1 File & Price (LKR) *</label>
+                <input type="file" id="p1File" accept="image/*" required style="margin-bottom: 5px;">
                 <input type="number" id="p1Price" placeholder="Price (eg: 1500)" required>
             </div>
             <div class="form-group">
-                <label>Photo 2 URL & Price (LKR)</label>
-                <input type="url" id="p2Url" placeholder="Image Link 2" style="margin-bottom: 5px;">
+                <label>Photo 2 File & Price (LKR)</label>
+                <input type="file" id="p2File" accept="image/*" style="margin-bottom: 5px;">
                 <input type="number" id="p2Price" placeholder="Price (eg: 2500)">
             </div>
 
-            <button type="submit" class="btn-submit"><i class="fas fa-check-circle"></i> Save Profile</button>
+            <button type="submit" id="saveBtn" class="btn-submit"><i class="fas fa-check-circle"></i> Save Profile</button>
         </form>
+    </div>
+
+    <!-- MY PROFILE / EDIT PAGE -->
+    <div id="myProfilePage" class="page-section">
+        <button class="back-btn" onclick="showPage('homePage')"><i class="fas fa-arrow-left"></i> Back to Home</button>
+        <h3><i class="fas fa-user-edit" style="color: var(--accent-pink);"></i> My Profile Dashboard</h3>
+        <div id="myProfileContent" style="margin-top: 15px;"></div>
     </div>
 
     <!-- SETTINGS PAGE -->
@@ -204,6 +223,7 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     const auth = firebase.auth();
+    const storage = firebase.storage();
     const provider = new firebase.auth.GoogleAuthProvider();
 
     let currentUser = null;
@@ -222,10 +242,22 @@
         showPage('registerPage');
     }
 
+    function showMyProfilePage() {
+        showPage('myProfilePage');
+        loadMyProfileDetails();
+    }
+
     function googleLogin() {
         auth.signInWithPopup(provider).catch(err => {
             alert("Login Error: " + err.message);
         });
+    }
+
+    async function uploadImageToStorage(file, path) {
+        if (!file) return null;
+        const ref = storage.ref(path);
+        const snapshot = await ref.put(file);
+        return await snapshot.ref.getDownloadURL();
     }
 
     auth.onAuthStateChanged(user => {
@@ -239,25 +271,16 @@
             googleBtn.style.display = 'none';
             regForm.style.display = 'block';
             document.getElementById('navLogout').style.display = 'flex';
+            document.getElementById('navMyProfile').style.display = 'flex';
 
             database.ref('users/' + user.uid).once('value', snapshot => {
                 const myData = snapshot.val();
                 if (myData) {
-                    document.getElementById('regAvatar').value = myData.avatar || user.photoURL || '';
                     document.getElementById('regName').value = myData.name || user.displayName || '';
                     document.getElementById('regAge').value = myData.age || '';
                     document.getElementById('regPhone').value = myData.phone || '';
                     document.getElementById('regAbout').value = myData.about || '';
-                    if (myData.photos && myData.photos[0]) {
-                        document.getElementById('p1Url').value = myData.photos[0].url || '';
-                        document.getElementById('p1Price').value = myData.photos[0].price || '';
-                    }
-                    if (myData.photos && myData.photos[1]) {
-                        document.getElementById('p2Url').value = myData.photos[1].url || '';
-                        document.getElementById('p2Price').value = myData.photos[1].price || '';
-                    }
                 } else {
-                    document.getElementById('regAvatar').value = user.photoURL || '';
                     document.getElementById('regName').value = user.displayName || '';
                 }
             });
@@ -266,10 +289,11 @@
             googleBtn.style.display = 'inline-block';
             regForm.style.display = 'none';
             document.getElementById('navLogout').style.display = 'none';
+            document.getElementById('navMyProfile').style.display = 'none';
         }
     });
 
-    function handleRegister(e) {
+    async function handleRegister(e) {
         e.preventDefault();
         const age = parseInt(document.getElementById('regAge').value);
         if (age < 18) {
@@ -284,7 +308,32 @@
             return;
         }
 
-        database.ref('users/' + currentUser.uid).once('value', snapshot => {
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.innerText = "Uploading Photos & Saving...";
+        saveBtn.disabled = true;
+
+        try {
+            const avatarFile = document.getElementById('regAvatarFile').files[0];
+            const p1File = document.getElementById('p1File').files[0];
+            const p2File = document.getElementById('p2File').files[0];
+
+            let avatarUrl = currentUser.photoURL || '';
+            if (avatarFile) {
+                avatarUrl = await uploadImageToStorage(avatarFile, `profiles/${currentUser.uid}/avatar`);
+            }
+
+            const photos = [];
+            if (p1File) {
+                const p1Url = await uploadImageToStorage(p1File, `profiles/${currentUser.uid}/p1_${Date.now()}`);
+                photos.push({ url: p1Url, price: document.getElementById('p1Price').value });
+            }
+
+            if (p2File) {
+                const p2Url = await uploadImageToStorage(p2File, `profiles/${currentUser.uid}/p2_${Date.now()}`);
+                photos.push({ url: p2Url, price: document.getElementById('p2Price').value });
+            }
+
+            const snapshot = await database.ref('users/' + currentUser.uid).once('value');
             const existingData = snapshot.val() || {};
 
             const profileData = {
@@ -293,25 +342,102 @@
                 age: age,
                 phone: document.getElementById('regPhone').value,
                 about: document.getElementById('regAbout').value,
-                avatar: document.getElementById('regAvatar').value,
+                avatar: avatarUrl,
                 subscribers: existingData.subscribers || 0,
                 subscribersList: existingData.subscribersList || {},
                 reports: existingData.reports || 0,
-                photos: [
-                    { url: document.getElementById('p1Url').value, price: document.getElementById('p1Price').value }
-                ]
+                reportsList: existingData.reportsList || {},
+                photos: photos
             };
 
-            const p2Url = document.getElementById('p2Url').value;
-            if (p2Url) {
-                profileData.photos.push({ url: p2Url, price: document.getElementById('p2Price').value });
+            await database.ref('users/' + currentUser.uid).set(profileData);
+            alert("ඔබගේ Profile එක සාර්ථකව Save විය!");
+            showPage('homePage');
+        } catch (err) {
+            alert("Error: " + err.message);
+        } finally {
+            saveBtn.innerText = "Save Profile";
+            saveBtn.disabled = false;
+        }
+    }
+
+    function loadMyProfileDetails() {
+        const container = document.getElementById('myProfileContent');
+        if (!currentUser) {
+            container.innerHTML = '<p>කරුණාකර Sign In වන්න.</p>';
+            return;
+        }
+
+        database.ref('users/' + currentUser.uid).on('value', snapshot => {
+            const data = snapshot.val();
+            if (!data) {
+                container.innerHTML = '<p>ඔබ තවම Profile එකක් සාදා නැත. Register Page වෙත යන්න.</p>';
+                return;
             }
 
-            database.ref('users/' + currentUser.uid).set(profileData).then(() => {
-                alert("ඔබගේ Profile එක සාර්ථකව Save විය!");
-                showPage('homePage');
-            });
+            let photosHTML = '';
+            if (data.photos) {
+                data.photos.forEach((p, idx) => {
+                    photosHTML += `
+                        <div class="photo-card">
+                            <button class="delete-photo-btn" onclick="deleteMyPhoto(${idx})"><i class="fas fa-times"></i></button>
+                            <img src="${p.url}">
+                            <div class="photo-info">
+                                <div class="photo-price">LKR ${p.price}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = `
+                <div class="user-card">
+                    <div class="user-header">
+                        <img src="${data.avatar}" class="user-avatar">
+                        <div>
+                            <h4>${data.name}</h4>
+                            <div style="font-size:0.85rem; color:#bbb;">Phone: ${data.phone}</div>
+                            <div style="font-size:0.85rem; color:#bbb;">Subscribers: ${data.subscribers || 0}</div>
+                        </div>
+                    </div>
+                    <p style="margin-top:10px; font-size:0.85rem; color:#ccc;">${data.about}</p>
+                    <h5 style="margin-top:15px;">Your Package Photos:</h5>
+                    <div class="photo-grid">${photosHTML}</div>
+                    
+                    <div style="margin-top:20px; border-top:1px solid #333; padding-top:15px;">
+                        <h5>අලුතින් Photo එකක් එක් කරන්න:</h5>
+                        <input type="file" id="addPhotoFile" accept="image/*" style="margin-top:5px; margin-bottom:5px;">
+                        <input type="number" id="addPhotoPrice" placeholder="Price (LKR)" style="width:100%; padding:8px; margin-bottom:8px; background:#141414; color:#fff; border:1px solid #333; border-radius:4px;">
+                        <button onclick="addNewPhotoToProfile()" class="btn-submit" style="padding:8px;"><i class="fas fa-plus"></i> Upload & Add Photo</button>
+                    </div>
+                </div>
+            `;
         });
+    }
+
+    async function deleteMyPhoto(index) {
+        if (!confirm("මෙම Photo එක ඉවත් කිරීමට අවශ්‍යද?")) return;
+        const snapshot = await database.ref(`users/${currentUser.uid}/photos`).once('value');
+        let photos = snapshot.val() || [];
+        photos.splice(index, 1);
+        await database.ref(`users/${currentUser.uid}/photos`).set(photos);
+    }
+
+    async function addNewPhotoToProfile() {
+        const file = document.getElementById('addPhotoFile').files[0];
+        const price = document.getElementById('addPhotoPrice').value;
+
+        if (!file || !price) {
+            alert("කරුණාකර Photo එක සහ Price එක ඇතුළත් කරන්න.");
+            return;
+        }
+
+        const url = await uploadImageToStorage(file, `profiles/${currentUser.uid}/photo_${Date.now()}`);
+        const snapshot = await database.ref(`users/${currentUser.uid}/photos`).once('value');
+        let photos = snapshot.val() || [];
+        photos.push({ url: url, price: price });
+        await database.ref(`users/${currentUser.uid}/photos`).set(photos);
+        alert("Photo එක සාර්ථකව එකතු විය!");
     }
 
     database.ref('users').on('value', snapshot => {
@@ -411,15 +537,23 @@
 
     function reportAccount(targetUid) {
         if (!currentUser) {
-            alert("Report කිරීමට Register Page එක වෙත ගොස් Sign In වන්න.");
+            alert("Report කිරීමට Sign In වන්න.");
             return;
         }
         const ref = database.ref(`users/${targetUid}`);
         ref.transaction(user => {
             if (user) {
+                if (!user.reportsList) user.reportsList = {};
+                if (user.reportsList[currentUser.uid]) {
+                    alert("ඔබ දැනටමත් මෙම ගිණුමට Report කර ඇත.");
+                    return;
+                }
+                user.reportsList[currentUser.uid] = true;
                 user.reports = (user.reports || 0) + 1;
                 if (user.reports >= 7) {
                     alert("මෙම ගිණුමට Reports 7ක් පිරුණු බැවින් පද්ධතියෙන් ඉවත් විය.");
+                } else {
+                    alert("Report එක සාර්ථකව සටහන් විය.");
                 }
             }
             return user;
