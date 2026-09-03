@@ -1,17 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="si">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joylix - Auto Register & Live Sync</title>
+    <title>Joylix Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    
-    <!-- Official Google Identity Services SDK -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
         :root {
@@ -40,33 +38,66 @@
 
         .logo { background-color: var(--accent-pink); color: #fff; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
 
-        .rewards-banner {
-            background: linear-gradient(135deg, #ff1493 0%, #4b0082 100%);
-            margin: 12px; padding: 14px; border-radius: 10px; color: #fff;
-            display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(255, 20, 147, 0.4);
-        }
-        .rewards-banner i { font-size: 2.2rem; color: #ffd700; }
-        .rewards-banner h4 { font-size: 0.95rem; margin-bottom: 2px; }
-        .rewards-banner p { font-size: 0.8rem; opacity: 0.9; }
+        .menu-btn { background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; }
 
-        .guest-notice {
-            background-color: #1a1a1a; margin: 12px; padding: 12px; border-radius: 8px;
-            border: 1px dashed var(--accent-pink); text-align: center; font-size: 0.85rem; color: var(--text-sub);
+        .side-menu {
+            position: absolute; top: 55px; right: -250px; width: 220px; background-color: #1a1a1a;
+            border: 1px solid var(--border-color); border-radius: 8px 0 0 8px; box-shadow: -4px 4px 15px rgba(0,0,0,0.5);
+            transition: right 0.3s ease; z-index: 200; display: flex; flex-direction: column;
         }
 
-        .profile-card { padding: 16px; border-bottom: 1px solid var(--border-color); }
-        .profile-header { display: flex; align-items: center; gap: 14px; }
-        .profile-avatar { width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--accent-pink); object-fit: cover; }
-        .profile-info { flex: 1; }
-        .profile-name { font-size: 1.1rem; font-weight: bold; }
+        .side-menu.active { right: 0; }
+
+        .menu-item {
+            display: flex; align-items: center; gap: 12px; padding: 14px 16px; color: var(--text-color);
+            text-decoration: none; border-bottom: 1px solid #2a2a2a; font-size: 0.9rem; cursor: pointer;
+        }
+        .menu-item i { color: var(--accent-pink); width: 20px; }
+
+        .page-section { display: none; padding: 16px; }
+        .page-section.active { display: block; }
+
+        /* Form Styles */
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 0.85rem; margin-bottom: 5px; color: var(--text-sub); }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 10px; background-color: #141414; border: 1px solid var(--border-color);
+            color: #fff; border-radius: 6px; font-size: 0.9rem;
+        }
+        .error-msg { color: #ff4d4d; font-size: 0.8rem; margin-top: 4px; display: none; }
+
+        .btn-submit {
+            width: 100%; padding: 12px; background-color: var(--accent-pink); color: #fff;
+            border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+
+        /* Profile & Feed Card Styles */
+        .user-card {
+            background-color: var(--card-bg); border-radius: 10px; padding: 16px; margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+        }
+        .user-header { display: flex; gap: 12px; align-items: center; }
+        .user-avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-pink); }
         
-        .user-tag {
-            font-size: 0.75rem; background: #25D366; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 6px;
+        .sub-btn {
+            background-color: var(--accent-pink); color: #fff; border: none; padding: 6px 14px;
+            border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 0.85rem;
+        }
+        .sub-btn.subscribed { background-color: #444; }
+
+        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+        .photo-card { background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #2a2a2a; }
+        .photo-card img { width: 100%; height: 120px; object-fit: cover; }
+        .photo-info { padding: 8px; text-align: center; }
+        .photo-price { color: #25D366; font-weight: bold; font-size: 0.9rem; margin: 4px 0; }
+        
+        .buy-btn {
+            background-color: #25D366; color: #fff; border: none; padding: 6px; width: 100%;
+            border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.8rem;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
         }
 
-        .signout-btn {
-            background: #333; color: #fff; border: none; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; display: none;
-        }
+        .report-btn { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 0.8rem; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -74,56 +105,83 @@
 <div class="app-container">
     <header>
         <div class="logo">Joylix</div>
-        
-        <!-- Google Sign-In Container (Popup Mode එක සහ Client ID එක එකතු කර ඇත) -->
-        <div id="g_id_onload"
-             data-client_id="857981291104-00qe8tm5enjo2anadsehq2rarl59o8fu.apps.googleusercontent.com"
-             data-callback="handleCredentialResponse"
-             data-auto_select="false"
-             data-ux_mode="popup">
-        </div>
-        
-        <div class="g_id_signin" id="googleBtn" data-type="standard" data-size="medium" data-theme="dark" data-text="sign_in_with"></div>
-        <button class="signout-btn" id="logoutBtn" onclick="logout()">Sign Out</button>
+        <button class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
     </header>
 
-    <!-- LOGGED-IN REWARDS SECTION -->
-    <div id="rewardsSection" style="display: none;">
-        <div class="rewards-banner">
-            <i class="fas fa-gift"></i>
-            <div>
-                <h4>🎉 ඔබ සාර්ථකව Auto-Register විය!</h4>
-                <p>ඔබගේ Google Account එක හරහා Profile එක සජීවීව සක්‍රීය වී ඇත. විශේෂ දීමනා සහ Rewards ලබා ගැනීමට සුදුසුකම් ලබා ඇත.</p>
-            </div>
+    <!-- Navigation Drawer -->
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-item" onclick="showPage('homePage')"><i class="fas fa-home"></i> Home</div>
+        <div class="menu-item" id="navRegister" onclick="showRegisterPage()"><i class="fas fa-user-plus"></i> Register Profile</div>
+        <div class="menu-item" onclick="showPage('settingsPage')"><i class="fas fa-cog"></i> Settings</div>
+        <div class="menu-item" id="navLogout" onclick="logout()" style="display:none;"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
+    </div>
+
+    <!-- HOME PAGE -->
+    <div id="homePage" class="page-section active">
+        <h3 style="margin-bottom: 12px;">Registered Users Feed</h3>
+        <div id="userFeed">
+            <p style="color: var(--text-sub);">Users load වෙමින් පවතී...</p>
         </div>
     </div>
 
-    <!-- GUEST NOTICE -->
-    <div id="guestNoticeSection" class="guest-notice">
-        <i class="fas fa-lock" style="color: var(--accent-pink);"></i> ඔබගේ **Original Google Account** එකෙන් Sign In වූ පසු Auto Register වී ත්‍යාග පෙනෙනු ඇත.
+    <!-- REGISTER PAGE -->
+    <div id="registerPage" class="page-section">
+        <h3>Profile Registration</h3>
+        <p style="color: var(--text-sub); font-size: 0.8rem; margin-bottom: 14px;">Sign In වී සිටීම අනිවාර්ය වේ.</p>
+
+        <form id="regForm" onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label>Profile Photo URL *</label>
+                <input type="url" id="regAvatar" placeholder="https://example.com/photo.jpg" required>
+            </div>
+            <div class="form-group">
+                <label>නම (Full Name) *</label>
+                <input type="text" id="regName" placeholder="ඔබගේ නම" required>
+            </div>
+            <div class="form-group">
+                <label>වයස (Age) *</label>
+                <input type="number" id="regAge" placeholder="18 හෝ ඊට වැඩි" required>
+                <small style="color: var(--text-sub);">වයස 18 ට වැඩි විය යුතුය.</small>
+                <div id="ageError" class="error-msg">වයස 18 ට අඩු අයට Register විය නොහැක!</div>
+            </div>
+            <div class="form-group">
+                <label>Mobile Number / WhatsApp Number *</label>
+                <input type="text" id="regPhone" placeholder="07XXXXXXXX හෝ 947XXXXXXXX" required>
+            </div>
+            <div class="form-group">
+                <label>About You (තමන්ගේ විස්තර) *</label>
+                <textarea id="regAbout" rows="3" placeholder="ඔබ ගැන කෙටි විස්තරයක්..." required></textarea>
+            </div>
+
+            <hr style="border-color: #222; margin: 15px 0;">
+            <h4>Photos with Packages & Prices</h4>
+
+            <div class="form-group" style="margin-top: 10px;">
+                <label>Photo 1 URL & Price (LKR) *</label>
+                <input type="url" id="p1Url" placeholder="Image 1 Link" required style="margin-bottom: 5px;">
+                <input type="number" id="p1Price" placeholder="Price (eg: 1500)" required>
+            </div>
+            <div class="form-group">
+                <label>Photo 2 URL & Price (LKR)</label>
+                <input type="url" id="p2Url" placeholder="Image 2 Link" style="margin-bottom: 5px;">
+                <input type="number" id="p2Price" placeholder="Price (eg: 2500)">
+            </div>
+
+            <button type="submit" class="btn-submit">Register Profile</button>
+        </form>
     </div>
 
-    <!-- LIVE PROFILE DISPLAY -->
-    <div class="profile-card">
-        <div class="profile-header">
-            <img id="liveAvatar" src="https://via.placeholder.com/75" alt="Profile" class="profile-avatar">
-            <div class="profile-info">
-                <div class="profile-name-row">
-                    <span class="profile-name" id="liveName">Guest User</span>
-                    <span id="liveBadge"></span>
-                </div>
-                <div style="font-size: 0.85rem; color: var(--text-sub);" id="liveEmail">No Email</div>
-            </div>
-        </div>
-        <div style="margin-top: 12px; background: #141414; padding: 10px; border-radius: 6px; font-size: 0.85rem;">
-            <strong>Live Account Status:</strong>
-            <p id="liveStatus" style="color: var(--text-sub); margin-top: 4px;">තවම Log In වී නැත. Google Sign-In එකෙන් Log වන්න.</p>
+    <!-- SETTINGS PAGE -->
+    <div id="settingsPage" class="page-section">
+        <h3>Settings & Guidelines</h3>
+        <div style="background: #141414; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 14px;">
+            <p style="margin-bottom: 10px;">🏆 <strong>Rewards:</strong> Subscribers ලක්ෂයක් (100,000) ලැබුණු පසු විශේෂ ත්‍යාග පිරිනමනු ලැබේ.</p>
+            <p style="color: #ff4d4d;">⚠️ <strong>Account Policy:</strong> යම් ගිණුමකට Reports 7ක් ලැබුණහොත් එම ගිණුම පද්ධතියෙන් ස්වයංක්‍රීයව අයින් කරනු ලැබේ (Delete වේ).</p>
         </div>
     </div>
 </div>
 
 <script>
-    // Firebase Configuration
     const firebaseConfig = {
         databaseURL: "https://xsri-e468b-default-rtdb.firebaseio.com",
         projectId: "xsri-e468b"
@@ -131,63 +189,182 @@
 
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
+    const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
 
-    function parseJwt(token) {
-        var base64Url = token.split('.')[1];
-        var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        return JSON.parse(jsonPayload);
+    let currentUser = null;
+
+    function toggleMenu() {
+        document.getElementById('sideMenu').classList.toggle('active');
     }
 
-    function handleCredentialResponse(response) {
-        const responsePayload = parseJwt(response.credential);
-
-        const userData = {
-            name: responsePayload.name,
-            email: responsePayload.email,
-            avatar: responsePayload.picture,
-            lastLogin: new Date().toISOString()
-        };
-
-        // Firebase Realtime Database එකට Auto Register වීම
-        database.ref('active_user').set(userData).then(() => {
-            document.getElementById('googleBtn').style.display = 'none';
-            document.getElementById('logoutBtn').style.display = 'block';
-            document.getElementById('rewardsSection').style.display = 'block';
-            document.getElementById('guestNoticeSection').style.display = 'none';
-
-            alert(`${userData.name} ලෙස සාර්ථකව Auto-Register වී Log විය!`);
-        }).catch((error) => {
-            console.error("Database Error:", error);
-            alert("Database Error: " + error.message);
-        });
+    function showPage(pageId) {
+        document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+        document.getElementById('sideMenu').classList.remove('active');
     }
 
-    // වෙනත් ඕනෑම ෆෝන් එකකට Live Data පෙන්වීම
-    database.ref('active_user').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if(data) {
-            document.getElementById('liveName').innerText = data.name;
-            document.getElementById('liveEmail').innerText = data.email;
-            document.getElementById('liveAvatar').src = data.avatar;
-            document.getElementById('liveBadge').innerHTML = '<span class="user-tag">Live Registered</span>';
-            document.getElementById('liveStatus').innerText = "ගිණුම සක්‍රීයයි. මෙම විස්තර වෙනත් ඕනෑම අයෙකුගේ ෆෝන් එකටද සජීවීව පෙනේ.";
+    function showRegisterPage() {
+        if (!currentUser) {
+            auth.signInWithRedirect(provider);
+        } else {
+            showPage('registerPage');
+        }
+    }
+
+    auth.getRedirectResult().catch(err => console.error(err));
+
+    auth.onAuthStateChanged(user => {
+        currentUser = user;
+        if (user) {
+            document.getElementById('navRegister').innerText = "Register Profile";
+            document.getElementById('navLogout').style.display = 'flex';
+        } else {
+            document.getElementById('navRegister').innerText = "Sign In / Register";
+            document.getElementById('navLogout').style.display = 'none';
         }
     });
 
+    function handleRegister(e) {
+        e.preventDefault();
+        const age = parseInt(document.getElementById('regAge').value);
+        if (age < 18) {
+            document.getElementById('ageError').style.display = 'block';
+            return;
+        } else {
+            document.getElementById('ageError').style.display = 'none';
+        }
+
+        if (!currentUser) {
+            alert("කරුණාකර පළමුව Google Sign In වන්න.");
+            return;
+        }
+
+        const profileData = {
+            uid: currentUser.uid,
+            name: document.getElementById('regName').value,
+            age: age,
+            phone: document.getElementById('regPhone').value,
+            about: document.getElementById('regAbout').value,
+            avatar: document.getElementById('regAvatar').value,
+            subscribers: 0,
+            reports: 0,
+            photos: [
+                { url: document.getElementById('p1Url').value, price: document.getElementById('p1Price').value }
+            ]
+        };
+
+        const p2Url = document.getElementById('p2Url').value;
+        if (p2Url) {
+            profileData.photos.push({ url: p2Url, price: document.getElementById('p2Price').value });
+        }
+
+        database.ref('profiles/' + currentUser.uid).set(profileData).then(() => {
+            alert("ඔබගේ Profile එක සාර්ථකව Register විය!");
+            showPage('homePage');
+        });
+    }
+
+    // Load Public Profiles on Homepage
+    database.ref('profiles').on('value', snapshot => {
+        const feed = document.getElementById('userFeed');
+        feed.innerHTML = '';
+        const data = snapshot.val();
+
+        if (!data) {
+            feed.innerHTML = '<p style="color: var(--text-sub);">කිසිදු Profile එකක් තවම නැත.</p>';
+            return;
+        }
+
+        Object.keys(data).forEach(key => {
+            const user = data[key];
+            if (user.reports >= 7) return; // Delete/Hide after 7 reports
+
+            let photosHTML = '';
+            if (user.photos) {
+                user.photos.forEach(p => {
+                    const waMsg = encodeURIComponent(`Hello, I would like to buy this package for LKR ${p.price}. Image URL: ${p.url}`);
+                    photosHTML += `
+                        <div class="photo-card">
+                            <img src="${p.url}" alt="Package">
+                            <div class="photo-info">
+                                <div class="photo-price">LKR ${p.price}</div>
+                                <a href="https://wa.me/${user.phone}?text=${waMsg}" target="_blank" style="text-decoration:none;">
+                                    <button class="buy-btn"><i class="fab fa-whatsapp"></i> Buy Package</button>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            const isSubbed = user.subscribersList && currentUser && user.subscribersList[currentUser.uid];
+
+            const card = document.createElement('div');
+            card.className = 'user-card';
+            card.innerHTML = `
+                <div class="user-header">
+                    <img src="${user.avatar}" class="user-avatar" alt="Avatar">
+                    <div>
+                        <h4 style="font-size: 1.05rem;">${user.name} <span style="font-size: 0.8rem; color: var(--text-sub);">(${user.age} yrs)</span></h4>
+                        <div style="font-size: 0.8rem; color: var(--text-sub);"><i class="fas fa-phone"></i> ${user.phone}</div>
+                        <button class="sub-btn ${isSubbed ? 'subscribed' : ''}" onclick="toggleSubscribe('${user.uid}')">
+                            ${isSubbed ? 'Subscribed' : 'Subscribe'} (${user.subscribers || 0})
+                        </button>
+                    </div>
+                </div>
+                <p style="font-size: 0.85rem; margin-top: 10px; color: #ddd;">${user.about}</p>
+                <div class="photo-grid">${photosHTML}</div>
+                <div style="text-align: right;">
+                    <button class="report-btn" onclick="reportAccount('${user.uid}')"><i class="fas fa-flag"></i> Report Account (${user.reports || 0}/7)</button>
+                </div>
+            `;
+            feed.appendChild(card);
+        });
+    });
+
+    function toggleSubscribe(targetUid) {
+        if (!currentUser) {
+            alert("Subscribe කිරීමට කරුණාකර පළමුව Sign In වන්න.");
+            return;
+        }
+        const ref = database.ref(`profiles/${targetUid}`);
+        ref.transaction(user => {
+            if (user) {
+                if (!user.subscribersList) user.subscribersList = {};
+                if (user.subscribersList[currentUser.uid]) {
+                    delete user.subscribersList[currentUser.uid];
+                    user.subscribers = Math.max(0, (user.subscribers || 1) - 1);
+                } else {
+                    user.subscribersList[currentUser.uid] = true;
+                    user.subscribers = (user.subscribers || 0) + 1;
+                }
+            }
+            return user;
+        });
+    }
+
+    function reportAccount(targetUid) {
+        if (!currentUser) {
+            alert("Report කිරීමට කරුණාකර පළමුව Sign In වන්න.");
+            return;
+        }
+        const ref = database.ref(`profiles/${targetUid}`);
+        ref.transaction(user => {
+            if (user) {
+                user.reports = (user.reports || 0) + 1;
+                if (user.reports >= 7) {
+                    alert("මෙම ගිණුමට Reports 7ක් පිරුණු බැවින් පද්ධතියෙන් ඉවත් විය.");
+                }
+            }
+            return user;
+        });
+    }
+
     function logout() {
-        document.getElementById('googleBtn').style.display = 'block';
-        document.getElementById('logoutBtn').style.display = 'none';
-        document.getElementById('rewardsSection').style.display = 'none';
-        document.getElementById('guestNoticeSection').style.display = 'block';
-        
-        document.getElementById('liveName').innerText = "Guest User";
-        document.getElementById('liveEmail').innerText = "No Email";
-        document.getElementById('liveAvatar').src = "https://via.placeholder.com/75";
-        document.getElementById('liveBadge').innerHTML = "";
-        document.getElementById('liveStatus').innerText = "තවම Log In වී නැත.";
+        auth.signOut().then(() => {
+            showPage('homePage');
+        });
     }
 </script>
 
