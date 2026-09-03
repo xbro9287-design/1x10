@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
-    <!-- Official Google Identity Services SDK (Original Google Sign-In සඳහා) -->
+    <!-- Official Google Identity Services SDK -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
@@ -40,7 +40,6 @@
 
         .logo { background-color: var(--accent-pink); color: #fff; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
 
-        /* Rewards Banner (Only for Logged-In Users) */
         .rewards-banner {
             background: linear-gradient(135deg, #ff1493 0%, #4b0082 100%);
             margin: 12px; padding: 14px; border-radius: 10px; color: #fff;
@@ -76,9 +75,9 @@
     <header>
         <div class="logo">Joylix</div>
         
-        <!-- Official Google Sign-In Button Container -->
+        <!-- Google Sign-In Container (ඔබගේ Client ID එක ඇතුළත් කර ඇත) -->
         <div id="g_id_onload"
-             data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+             data-client_id="857981291104-00qe8tm5enjo2anadsehq2rarl59o8fu.apps.googleusercontent.com"
              data-callback="handleCredentialResponse"
              data-auto_prompt="false">
         </div>
@@ -87,7 +86,7 @@
         <button class="signout-btn" id="logoutBtn" onclick="logout()">Sign Out</button>
     </header>
 
-    <!-- 1. REWARDS SECTION (LOGGED-IN USERS ONLY) -->
+    <!-- LOGGED-IN REWARDS SECTION -->
     <div id="rewardsSection" style="display: none;">
         <div class="rewards-banner">
             <i class="fas fa-gift"></i>
@@ -98,12 +97,12 @@
         </div>
     </div>
 
-    <!-- 2. GUEST NOTICE -->
+    <!-- GUEST NOTICE -->
     <div id="guestNoticeSection" class="guest-notice">
         <i class="fas fa-lock" style="color: var(--accent-pink);"></i> ඔබගේ **Original Google Account** එකෙන් Sign In වූ පසු Auto Register වී ත්‍යාග පෙනෙනු ඇත.
     </div>
 
-    <!-- 3. LIVE PROFILE DISPLAY (EVERYONE SEES THIS FROM DATABASE) -->
+    <!-- LIVE PROFILE DISPLAY -->
     <div class="profile-card">
         <div class="profile-header">
             <img id="liveAvatar" src="https://via.placeholder.com/75" alt="Profile" class="profile-avatar">
@@ -123,21 +122,15 @@
 </div>
 
 <script>
-    // 1. Firebase Configuration
+    // Firebase Configuration
     const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-        projectId: "YOUR_PROJECT",
-        storageBucket: "YOUR_PROJECT.appspot.com",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
+        databaseURL: "https://xsri-e468b-default-rtdb.firebaseio.com",
+        projectId: "xsri-e468b"
     };
 
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // JWT Token Decode කරන Function එක (Google Details ලබා ගැනීමට)
     function parseJwt(token) {
         var base64Url = token.split('.')[1];
         var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -147,7 +140,6 @@
         return JSON.parse(jsonPayload);
     }
 
-    // 2. Google Sign-In වූ පසු Auto-Register වන Function එක
     function handleCredentialResponse(response) {
         const responsePayload = parseJwt(response.credential);
 
@@ -158,19 +150,21 @@
             lastLogin: new Date().toISOString()
         };
 
-        // Firebase Realtime Database එකට Auto Register වී Data Save වීම
+        // Firebase Realtime Database එකට Auto Register වීම
         database.ref('active_user').set(userData).then(() => {
-            // Screen UI වෙනස් කිරීම
             document.getElementById('googleBtn').style.display = 'none';
             document.getElementById('logoutBtn').style.display = 'block';
             document.getElementById('rewardsSection').style.display = 'block';
             document.getElementById('guestNoticeSection').style.display = 'none';
 
             alert(`${userData.name} ලෙස සාර්ථකව Auto-Register වී Log විය!`);
+        }).catch((error) => {
+            console.error("Database Error:", error);
+            alert("Database Error: " + error.message);
         });
     }
 
-    // 3. Database එකේ ඇති Data සියලුම වෙනත් ෆෝන්වලට Live පෙන්වීම
+    // වෙනත් ඕනෑම ෆෝන් එකකට Live Data පෙන්වීම
     database.ref('active_user').on('value', (snapshot) => {
         const data = snapshot.val();
         if(data) {
@@ -182,7 +176,6 @@
         }
     });
 
-    // 4. Logout Function එක
     function logout() {
         document.getElementById('googleBtn').style.display = 'block';
         document.getElementById('logoutBtn').style.display = 'none';
