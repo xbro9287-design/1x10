@@ -288,14 +288,12 @@
             gap: 6px;
         }
 
-        /* Hide Google Translate Frame Element */
         .goog-te-banner-frame, .skiptranslate { display: none !important; }
         body { top: 0px !important; }
     </style>
 </head>
 <body>
 
-<!-- Google Translate Hidden Div -->
 <div id="google_translate_element" style="display:none;"></div>
 
 <div class="app-container">
@@ -317,27 +315,23 @@
         <div class="menu-item" onclick="switchAccount()"><i class="fas fa-exchange-alt"></i> Switch Account</div>
         <div class="menu-item" onclick="showPage('settingsPage')"><i class="fas fa-cog"></i> Settings</div>
         
-        <!-- Language Selector Dropdown -->
         <div style="padding: 12px 16px; border-bottom: 1px solid #2a2a2a;">
             <div style="font-size:0.85rem; color:var(--text-sub); display:flex; align-items:center; gap:8px;">
                 <i class="fas fa-language" style="color:var(--accent-pink);"></i> Select Language
             </div>
-            <select class="lang-select-box" onchange="changeAppLanguage(this.value)">
-                <option value="">Select Language</option>
-                <option value="si">🇱🇰 Sinhala</option>
-                <option value="en">🇬🇧/🇺🇸 English</option>
-                <option value="ta">🇮🇳 Tamil</option>
-                <option value="ja">🇯🇵 Japanese</option>
-                <option value="ko">🇰🇷 Korean</option>
-                <option value="hi">🇮🇳 Hindi</option>
-                <option value="es">🇸🇻 Spanish</option>
-                <option value="pt">🇧🇷 Portuguese</option>
-                <option value="no">🇳🇴 Norwegian</option>
-                <option value="fr">🇨🇮 French</option>
-                <option value="ka">🇬🇪 Georgian</option>
-                <option value="ar">🇾🇪 Arabic</option>
-                <option value="ne">🇳🇪 Nepali</option>
-                <option value="vi">🇻🇺 Vietnamese</option>
+            <select class="lang-select-box" id="langSelect" onchange="changeAppLanguage(this.value)">
+                <option value="si">🇱🇰 Sinhala (LKR)</option>
+                <option value="en">🇬🇧/🇺🇸 English (USD)</option>
+                <option value="ta">🇮🇳 Tamil (INR)</option>
+                <option value="ja">🇯🇵 Japanese (JPY)</option>
+                <option value="ko">🇰🇷 Korean (KRW)</option>
+                <option value="hi">🇮🇳 Hindi (INR)</option>
+                <option value="es">🇪🇸 Spanish (EUR)</option>
+                <option value="pt">🇧🇷 Portuguese (BRL)</option>
+                <option value="no">🇳🇴 Norwegian (NOK)</option>
+                <option value="fr">🇨🇮 French (XOF)</option>
+                <option value="ar">🇾🇪 Arabic (AED)</option>
+                <option value="ne">🇳🇪 Nepali (NPR)</option>
             </select>
         </div>
     </div>
@@ -389,12 +383,12 @@
             </div>
 
             <hr style="border-color: #222; margin: 16px 0;">
-            <h4 style="font-size: 0.9rem; margin-bottom: 10px;">Packages / Extra Photos</h4>
+            <h4 style="font-size: 0.9rem; margin-bottom: 10px;">Packages / Extra Photos (Base LKR)</h4>
 
             <div id="packageInputsContainer"></div>
 
             <button type="button" class="btn-add-more" onclick="addPackageInputField()">
-                <i class="fas fa-plus-circle"></i> Add Package Photo / Price
+                <i class="fas fa-plus-circle"></i> Add Package Photo / Price (LKR)
             </button>
 
             <button type="submit" id="saveBtn" class="btn-submit"><i class="fas fa-check-circle"></i> Save Profile</button>
@@ -423,13 +417,11 @@
     </div>
 </div>
 
-<!-- LIGHTBOX MODAL -->
 <div id="lightboxModal" class="lightbox-modal">
     <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
     <img id="lightboxImg" src="" alt="Full Screen">
 </div>
 
-<!-- Google Translate Direct Trigger Script -->
 <script type="text/javascript">
     function googleTranslateElementInit() {
         new google.translate.TranslateElement({
@@ -441,19 +433,18 @@
 
     function changeAppLanguage(langCode) {
         if (!langCode) return;
-        
-        // Cookie Force Set for instant change
+        localStorage.setItem('joylix_lang', langCode);
         document.cookie = "googtrans=/si/" + langCode + "; path=/;";
         document.cookie = "googtrans=/si/" + langCode + "; domain=." + location.host + "; path=/;";
         
-        // Trigger Google Translate Select Box
         const select = document.querySelector('.goog-te-combo');
         if (select) {
             select.value = langCode;
             select.dispatchEvent(new Event('change'));
-        } else {
-            location.reload(); // Refresh to apply cookie translation if direct select not found
         }
+        
+        // Re-render feed with active currency
+        if(typeof renderFeed === 'function') renderFeed();
     }
 </script>
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
@@ -467,6 +458,29 @@
     const database = firebase.database();
 
     let allUsersData = {};
+
+    // Currency Rates relative to LKR
+    const currencyRates = {
+        si: { rate: 1, symbol: "LKR" },
+        en: { rate: 0.0033, symbol: "$" },
+        ta: { rate: 0.28, symbol: "₹" },
+        hi: { rate: 0.28, symbol: "₹" },
+        ja: { rate: 0.50, symbol: "¥" },
+        ko: { rate: 4.40, symbol: "₩" },
+        es: { rate: 0.0031, symbol: "€" },
+        pt: { rate: 0.017, symbol: "R$" },
+        no: { rate: 0.035, symbol: "kr" },
+        fr: { rate: 2.02, symbol: "CFA" },
+        ar: { rate: 0.012, symbol: "AED" },
+        ne: { rate: 0.44, symbol: "NPR" }
+    };
+
+    function formatPrice(lkrAmount) {
+        const lang = localStorage.getItem('joylix_lang') || 'si';
+        const curr = currencyRates[lang] || currencyRates['si'];
+        const converted = (parseFloat(lkrAmount) * curr.rate).toFixed(curr.rate < 0.1 ? 2 : 0);
+        return `${curr.symbol} ${converted}`;
+    }
 
     window.addEventListener('popstate', function (event) {
         const activeSection = document.querySelector('.page-section.active');
@@ -756,12 +770,13 @@
         let photosHTML = '';
         if (user.photos && user.photos.length > 0) {
             user.photos.forEach(p => {
-                const waMsg = encodeURIComponent(`Hello ${user.name}, I would like to buy your package for LKR ${p.price}`);
+                const formattedPrice = formatPrice(p.price);
+                const waMsg = encodeURIComponent(`Hello ${user.name}, I would like to buy your package for ${formattedPrice}`);
                 photosHTML += `
                     <div class="photo-card">
                         <img src="${p.url}" onclick="openLightbox('${p.url}')">
                         <div style="padding: 6px; text-align:center;">
-                            <div style="color:#25D366; font-weight:bold; margin-bottom:4px; font-size:0.8rem;">LKR ${p.price}</div>
+                            <div style="color:#25D366; font-weight:bold; margin-bottom:4px; font-size:0.8rem;">${formattedPrice}</div>
                             <a href="https://wa.me/${user.phone}?text=${waMsg}" target="_blank" class="buy-btn">
                                 <i class="fab fa-whatsapp"></i> Buy
                             </a>
@@ -793,11 +808,9 @@
         showPage('singleProfilePage');
     }
 
-    // Realtime Listener
-    database.ref('users').on('value', snapshot => {
+    function renderFeed() {
         const feed = document.getElementById('userFeed');
         feed.innerHTML = '';
-        allUsersData = snapshot.val();
         const myUserId = localStorage.getItem('joylix_my_user_id');
 
         updateHeaderPill();
@@ -816,12 +829,13 @@
 
             if (user.photos && user.photos.length > 0) {
                 user.photos.forEach(p => {
-                    const waMsg = encodeURIComponent(`Hello ${user.name}, I would like to buy your package for LKR ${p.price}`);
+                    const formattedPrice = formatPrice(p.price);
+                    const waMsg = encodeURIComponent(`Hello ${user.name}, I would like to buy your package for ${formattedPrice}`);
                     photosHTML += `
                         <div class="photo-card" onclick="event.stopPropagation();">
                             <img src="${p.url}" onclick="openLightbox('${p.url}')">
                             <div style="padding: 4px; text-align:center;">
-                                <div style="color:#25D366; font-weight:bold; margin-bottom:2px; font-size:0.75rem;">LKR ${p.price}</div>
+                                <div style="color:#25D366; font-weight:bold; margin-bottom:2px; font-size:0.75rem;">${formattedPrice}</div>
                                 <a href="https://wa.me/${user.phone}?text=${waMsg}" target="_blank" class="buy-btn">
                                     <i class="fab fa-whatsapp"></i> Buy
                                 </a>
@@ -853,6 +867,12 @@
             `;
             feed.appendChild(card);
         });
+    }
+
+    // Realtime Listener
+    database.ref('users').on('value', snapshot => {
+        allUsersData = snapshot.val();
+        renderFeed();
     });
 </script>
 </body>
