@@ -101,34 +101,26 @@
         .menu-item { 
             display: flex; 
             align-items: center; 
-            justify-content: space-between;
-            padding: 14px 16px; 
+            gap: 12px; 
+            padding: 12px 16px; 
             color: var(--text-color); 
             border-bottom: 1px solid #2a2a2a; 
-            font-size: 0.95rem; 
+            font-size: 0.9rem; 
             cursor: pointer; 
         }
         .menu-item:hover { background-color: #252525; }
-        .menu-item-left { display: flex; align-items: center; gap: 12px; }
 
-        .lang-submenu {
-            display: none;
-            background-color: #111;
-            max-height: 200px;
-            overflow-y: auto;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .lang-submenu.active { display: block; }
-        .lang-option {
-            padding: 10px 18px;
+        .lang-select-box {
+            background: #111;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            width: 100%;
             font-size: 0.85rem;
-            color: var(--text-sub);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            margin-top: 5px;
+            outline: none;
         }
-        .lang-option:hover { background: #222; color: #fff; }
 
         .page-section { display: none; padding: 14px; }
         .page-section.active { display: block; }
@@ -198,23 +190,23 @@
             text-decoration: none; 
         }
 
-        .subscribe-btn {
+        .sub-btn {
             background-color: var(--accent-pink);
             color: #fff;
             border: none;
-            padding: 5px 12px;
-            border-radius: 20px;
+            padding: 5px 10px;
+            border-radius: 15px;
             font-size: 0.75rem;
             font-weight: bold;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
+            gap: 4px;
+            transition: 0.2s;
         }
-        .subscribe-btn.subscribed {
+        .sub-btn.subscribed {
             background-color: #333;
-            color: #bbb;
+            color: #aaa;
             border: 1px solid #555;
         }
 
@@ -295,9 +287,16 @@
             align-items: center;
             gap: 6px;
         }
+
+        /* Hide Google Translate Frame Element */
+        .goog-te-banner-frame, .skiptranslate { display: none !important; }
+        body { top: 0px !important; }
     </style>
 </head>
 <body>
+
+<!-- Google Translate Hidden Div -->
+<div id="google_translate_element" style="display:none;"></div>
 
 <div class="app-container">
     <header>
@@ -313,44 +312,33 @@
     </header>
 
     <div class="side-menu" id="sideMenu">
-        <div class="menu-item" onclick="showPage('homePage')">
-            <div class="menu-item-left"><i class="fas fa-home"></i> Home Feed</div>
-        </div>
-        <div class="menu-item" onclick="openProfileEdit()">
-            <div class="menu-item-left"><i class="fas fa-user-edit"></i> Edit My Profile</div>
-        </div>
-        <div class="menu-item" onclick="switchAccount()">
-            <div class="menu-item-left"><i class="fas fa-exchange-alt"></i> Switch Account</div>
-        </div>
+        <div class="menu-item" onclick="showPage('homePage')"><i class="fas fa-home"></i> Home Feed</div>
+        <div class="menu-item" onclick="openProfileEdit()"><i class="fas fa-user-edit"></i> Edit My Profile</div>
+        <div class="menu-item" onclick="switchAccount()"><i class="fas fa-exchange-alt"></i> Switch Account</div>
+        <div class="menu-item" onclick="showPage('settingsPage')"><i class="fas fa-cog"></i> Settings</div>
         
-        <!-- Language Option Dropdown -->
-        <div class="menu-item" onclick="toggleLanguageMenu()">
-            <div class="menu-item-left"><i class="fas fa-globe"></i> Language</div>
-            <i class="fas fa-chevron-down" style="font-size: 0.75rem;"></i>
-        </div>
-        <div class="lang-submenu" id="langSubmenu">
-            <div class="lang-option" onclick="selectLang('🇬🇧 English')">🇬🇧 English</div>
-            <div class="lang-option" onclick="selectLang('🇱🇰 Sinhala')">🇱🇰 Sinhala</div>
-            <div class="lang-option" onclick="selectLang('🇯🇵 Japanese')">🇯🇵 Japanese</div>
-            <div class="lang-option" onclick="selectLang('🇰🇷 Korean')">🇰🇷 Korean</div>
-            <div class="lang-option" onclick="selectLang('🇨🇮 Ivory Coast')">🇨🇮 Ivory Coast</div>
-            <div class="lang-option" onclick="selectLang('🇬🇪 Georgia')">🇬🇪 Georgia</div>
-            <div class="lang-option" onclick="selectLang('🇮🇳 India')">🇮🇳 India</div>
-            <div class="lang-option" onclick="selectLang('🇺🇸 USA')">🇺🇸 USA</div>
-            <div class="lang-option" onclick="selectLang('🇧🇷 Brazil')">🇧🇷 Brazil</div>
-            <div class="lang-option" onclick="selectLang('🇾🇪 Yemen')">🇾🇪 Yemen</div>
-            <div class="lang-option" onclick="selectLang('🇸🇻 El Salvador')">🇸🇻 El Salvador</div>
-            <div class="lang-option" onclick="selectLang('🇹🇰 Tokelau')">🇹🇰 Tokelau</div>
-            <div class="lang-option" onclick="selectLang('🇸🇲 San Marino')">🇸🇲 San Marino</div>
-            <div class="lang-option" onclick="selectLang('🇳🇴 Norway')">🇳🇴 Norway</div>
-            <div class="lang-option" onclick="selectLang('🇳🇬 Nigeria')">🇳🇬 Nigeria</div>
-            <div class="lang-option" onclick="selectLang('🇳🇪 Niger')">🇳🇪 Niger</div>
-            <div class="lang-option" onclick="selectLang('🇽🇰 Kosovo')">🇽🇰 Kosovo</div>
-            <div class="lang-option" onclick="selectLang('🇻🇺 Vanuatu')">🇻🇺 Vanuatu</div>
-        </div>
-
-        <div class="menu-item" onclick="showPage('settingsPage')">
-            <div class="menu-item-left"><i class="fas fa-cog"></i> Platform Settings</div>
+        <!-- Language Selector Dropdown -->
+        <div style="padding: 12px 16px; border-bottom: 1px solid #2a2a2a;">
+            <div style="font-size:0.85rem; color:var(--text-sub); display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-language" style="color:var(--accent-pink);"></i> Select Language
+            </div>
+            <select class="lang-select-box" onchange="changeAppLanguage(this.value)">
+                <option value="">Select Language</option>
+                <option value="si">🇱🇰 Sinhala</option>
+                <option value="en">🇬🇧/🇺🇸 English</option>
+                <option value="ta">🇮🇳 Tamil</option>
+                <option value="ja">🇯🇵 Japanese</option>
+                <option value="ko">🇰🇷 Korean</option>
+                <option value="hi">🇮🇳 Hindi</option>
+                <option value="es">🇸🇻 Spanish</option>
+                <option value="pt">🇧🇷 Portuguese</option>
+                <option value="no">🇳🇴 Norwegian</option>
+                <option value="fr">🇨🇮 French</option>
+                <option value="ka">🇬🇪 Georgian</option>
+                <option value="ar">🇾🇪 Arabic</option>
+                <option value="ne">🇳🇪 Nepali</option>
+                <option value="vi">🇻🇺 Vietnamese</option>
+            </select>
         </div>
     </div>
 
@@ -369,7 +357,7 @@
     <!-- SUBSCRIBED PROFILES PAGE -->
     <div id="subscribedPage" class="page-section">
         <button class="back-feed-btn" onclick="showPage('settingsPage')"><i class="fas fa-arrow-left"></i> Back to Settings</button>
-        <h3 style="margin-bottom: 12px; font-size: 1rem;"><i class="fas fa-bell" style="color: var(--accent-pink);"></i> Subscribed Profiles</h3>
+        <h3 style="margin-bottom: 12px; font-size: 1rem;"><i class="fas fa-bell" style="color: var(--accent-pink);"></i> My Subscribed Profiles</h3>
         <div id="subscribedFeed">Loading subscribed profiles...</div>
     </div>
 
@@ -417,12 +405,12 @@
     <div id="settingsPage" class="page-section">
         <h3 style="font-size: 1.1rem;"><i class="fas fa-sliders-h" style="color: var(--accent-pink);"></i> Settings</h3>
         
-        <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); padding: 14px; border-radius: 8px; margin-top: 12px; cursor: pointer;" onclick="showSubscribedProfiles()">
-            <h4 style="font-size:0.95rem; display:flex; align-items:center; justify-content:space-between;">
-                <span><i class="fas fa-bell" style="color: var(--accent-pink);"></i> Subscribed Profiles</span>
-                <i class="fas fa-chevron-right" style="color:var(--text-sub); font-size:0.8rem;"></i>
-            </h4>
-            <p style="font-size: 0.8rem; color: var(--text-sub); margin-top: 6px;">ඔබ Subscribe කළ සියලුම Profiles වෙනම බලන්න.</p>
+        <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); padding: 14px; border-radius: 8px; margin-top: 12px; cursor:pointer;" onclick="openSubscribedList()">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:600; font-size:0.9rem;"><i class="fas fa-heart" style="color:var(--accent-pink);"></i> Subscribed Profiles</span>
+                <i class="fas fa-chevron-right" style="color:var(--text-sub);"></i>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-sub); margin-top: 4px;">ඔබ Subscribe කළ සියලුම Profiles වෙනම බලන්න.</p>
         </div>
 
         <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 8px; margin-top: 12px;">
@@ -435,10 +423,40 @@
     </div>
 </div>
 
+<!-- LIGHTBOX MODAL -->
 <div id="lightboxModal" class="lightbox-modal">
     <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
     <img id="lightboxImg" src="" alt="Full Screen">
 </div>
+
+<!-- Google Translate Direct Trigger Script -->
+<script type="text/javascript">
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'si',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+        }, 'google_translate_element');
+    }
+
+    function changeAppLanguage(langCode) {
+        if (!langCode) return;
+        
+        // Cookie Force Set for instant change
+        document.cookie = "googtrans=/si/" + langCode + "; path=/;";
+        document.cookie = "googtrans=/si/" + langCode + "; domain=." + location.host + "; path=/;";
+        
+        // Trigger Google Translate Select Box
+        const select = document.querySelector('.goog-te-combo');
+        if (select) {
+            select.value = langCode;
+            select.dispatchEvent(new Event('change'));
+        } else {
+            location.reload(); // Refresh to apply cookie translation if direct select not found
+        }
+    }
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 <script>
     const firebaseConfig = {
@@ -448,38 +466,27 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    let currentPage = 'homePage';
+    let allUsersData = {};
 
-    // Handle Mobile Back Button Behavior
     window.addEventListener('popstate', function (event) {
-        if (currentPage !== 'homePage') {
+        const activeSection = document.querySelector('.page-section.active');
+        if (activeSection && activeSection.id !== 'homePage') {
             showPage('homePage', false);
         }
     });
 
-    function showPage(pageId, pushState = true) {
-        document.querySelectorAll('.page-section').forEach(e => e.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
-        document.getElementById('sideMenu').classList.remove('active');
-        
-        if (pushState && pageId !== 'homePage') {
-            history.pushState({ page: pageId }, '', '#' + pageId);
-        }
-        currentPage = pageId;
-    }
-
     function toggleMenu() { 
         document.getElementById('sideMenu').classList.toggle('active'); 
     }
-
-    function toggleLanguageMenu() {
-        document.getElementById('langSubmenu').classList.toggle('active');
-    }
-
-    function selectLang(lang) {
-        alert("Language changed to: " + lang);
-        document.getElementById('langSubmenu').classList.remove('active');
+    
+    function showPage(pageId, pushState = true) { 
+        document.querySelectorAll('.page-section').forEach(e => e.classList.remove('active')); 
+        document.getElementById(pageId).classList.add('active');
         document.getElementById('sideMenu').classList.remove('active');
+
+        if (pushState) {
+            history.pushState({ page: pageId }, '', '#' + pageId);
+        }
     }
 
     function openLightbox(src) {
@@ -563,6 +570,29 @@
         }
     }
 
+    async function toggleSubscribe(targetUid, event) {
+        if(event) event.stopPropagation();
+
+        let myUserId = localStorage.getItem('joylix_my_user_id');
+        if (!myUserId) {
+            myUserId = 'user_' + Date.now();
+            localStorage.setItem('joylix_my_user_id', myUserId);
+        }
+
+        if (myUserId === targetUid) {
+            return alert("තමන්ගේ Profile එක Subscribe කළ නොහැක!");
+        }
+
+        const subRef = database.ref(`users/${targetUid}/subscribers/${myUserId}`);
+        const snap = await subRef.once('value');
+
+        if (snap.exists()) {
+            await subRef.remove();
+        } else {
+            await subRef.set(true);
+        }
+    }
+
     async function handleRegister(e) {
         e.preventDefault();
         const age = parseInt(document.getElementById('regAge').value);
@@ -617,8 +647,11 @@
                 return;
             }
 
-            const existingSnap = await database.ref('users/' + myUserId).once('value');
-            const currentSubCount = (existingSnap.exists() && existingSnap.val().subscribes) ? existingSnap.val().subscribes : 0;
+            const snapExist = await database.ref('users/' + myUserId).once('value');
+            let currentSubs = {};
+            if(snapExist.exists() && snapExist.val().subscribers) {
+                currentSubs = snapExist.val().subscribers;
+            }
 
             await database.ref('users/' + myUserId).set({
                 uid: myUserId,
@@ -627,8 +660,8 @@
                 phone: document.getElementById('regPhone').value,
                 about: document.getElementById('regAbout').value,
                 avatar: avatarUrl,
-                subscribes: currentSubCount,
-                photos: photos
+                photos: photos,
+                subscribers: currentSubs
             });
 
             alert("Profile එක සාර්ථකව Update විය!");
@@ -669,32 +702,46 @@
         pill.style.display = 'none';
     }
 
-    // Subscribe / Unsubscribe System Logic
-    async function toggleSubscribe(targetUid, event) {
-        if(event) event.stopPropagation();
-        
-        let subList = JSON.parse(localStorage.getItem('joylix_sub_list') || '[]');
-        const isSubbed = subList.includes(targetUid);
-        const ref = database.ref('users/' + targetUid + '/subscribes');
+    function openSubscribedList() {
+        const myUserId = localStorage.getItem('joylix_my_user_id');
+        const feed = document.getElementById('subscribedFeed');
+        feed.innerHTML = '';
 
-        const snap = await ref.once('value');
-        let count = snap.val() || 0;
-
-        if (isSubbed) {
-            // Unsubscribe
-            subList = subList.filter(id => id !== targetUid);
-            count = Math.max(0, count - 1);
-        } else {
-            // Subscribe
-            subList.push(targetUid);
-            count += 1;
+        if (!allUsersData) {
+            feed.innerHTML = '<p style="color:var(--text-sub); font-size:0.85rem;">නොමැත.</p>';
+            showPage('subscribedPage');
+            return;
         }
 
-        localStorage.setItem('joylix_sub_list', JSON.stringify(subList));
-        await ref.set(count);
+        let count = 0;
+        Object.keys(allUsersData).forEach(key => {
+            const user = allUsersData[key];
+            if (user.subscribers && user.subscribers[myUserId]) {
+                count++;
+                const card = document.createElement('div');
+                card.className = 'user-card';
+                card.onclick = () => viewSingleProfile(user.uid);
+                card.innerHTML = `
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <img src="${user.avatar}" class="user-avatar">
+                        <div style="flex:1;">
+                            <h4 style="font-size: 0.95rem;">${user.name}</h4>
+                            <div style="font-size:0.75rem; color:var(--text-sub);">Age: ${user.age} | ${user.phone}</div>
+                        </div>
+                        <button class="sub-btn subscribed" onclick="toggleSubscribe('${user.uid}', event)">Subscribed</button>
+                    </div>
+                `;
+                feed.appendChild(card);
+            }
+        });
+
+        if (count === 0) {
+            feed.innerHTML = '<p style="color:var(--text-sub); font-size:0.85rem;">ඔබ තවම කිසිදු Profile එකක් Subscribe කර නොමැත.</p>';
+        }
+
+        showPage('subscribedPage');
     }
 
-    // View Single Profile
     async function viewSingleProfile(uid) {
         const snap = await database.ref('users/' + uid).once('value');
         if (!snap.exists()) return;
@@ -702,10 +749,9 @@
         const user = snap.val();
         const myUserId = localStorage.getItem('joylix_my_user_id');
         const isOwner = (myUserId && myUserId === user.uid);
-        
-        const subList = JSON.parse(localStorage.getItem('joylix_sub_list') || '[]');
-        const isSubbed = subList.includes(user.uid);
-        const subCount = user.subscribes || 0;
+
+        const subsCount = user.subscribers ? Object.keys(user.subscribers).length : 0;
+        const isSubbed = (user.subscribers && user.subscribers[myUserId]);
 
         let photosHTML = '';
         if (user.photos && user.photos.length > 0) {
@@ -728,21 +774,18 @@
         const container = document.getElementById('singleProfileContainer');
         container.innerHTML = `
             <div class="user-card" style="cursor:default;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <div style="display:flex; gap:12px; align-items:center;">
-                        <img src="${user.avatar}" class="user-avatar" style="width:60px; height:60px;" onclick="openLightbox('${user.avatar}')">
-                        <div>
-                            <h3 style="font-size: 1.05rem;">${user.name} ${isOwner ? '<span style="color:var(--accent-pink); font-size:0.75rem;">(You)</span>' : ''}</h3>
-                            <div style="font-size:0.8rem; color:var(--text-sub);">Age: ${user.age} | ${user.phone}</div>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <img src="${user.avatar}" class="user-avatar" style="width:65px; height:65px;" onclick="openLightbox('${user.avatar}')">
+                    <div style="flex:1;">
+                        <h3 style="font-size: 1.1rem;">${user.name} ${isOwner ? '<span style="color:var(--accent-pink); font-size:0.75rem;">(You)</span>' : ''}</h3>
+                        <div style="font-size:0.8rem; color:var(--text-sub);">Age: ${user.age} | ${user.phone}</div>
+                        <div style="font-size:0.75rem; color:var(--accent-pink); margin-top:2px;">
+                            <i class="fas fa-bell"></i> ${subsCount} Subscribers
                         </div>
                     </div>
-                    ${!isOwner ? `
-                        <button class="subscribe-btn ${isSubbed ? 'subscribed' : ''}" onclick="toggleSubscribe('${user.uid}', event)">
-                            <i class="fas ${isSubbed ? 'fa-check' : 'fa-plus'}"></i> ${isSubbed ? 'Subscribed' : 'Subscribe'} (${subCount})
-                        </button>
-                    ` : ''}
+                    ${!isOwner ? `<button class="sub-btn ${isSubbed ? 'subscribed' : ''}" onclick="toggleSubscribe('${user.uid}', event)">${isSubbed ? 'Subscribed' : '+ Subscribe'}</button>` : ''}
                 </div>
-                <p style="margin-top:12px; font-size:0.85rem; color:#ccc; line-height: 1.4;">${user.about}</p>
+                <p style="margin-top:12px; font-size:0.9rem; color:#ccc; line-height: 1.4;">${user.about}</p>
                 <div class="photo-grid" style="margin-top:14px;">${photosHTML}</div>
                 ${isOwner ? `<button class="delete-btn" onclick="deleteMyProfile('${user.uid}')"><i class="fas fa-trash"></i> Delete My Profile</button>` : ''}
             </div>
@@ -750,98 +793,64 @@
         showPage('singleProfilePage');
     }
 
-    // View Subscribed Profiles List
-    async function showSubscribedProfiles() {
-        const feed = document.getElementById('subscribedFeed');
-        feed.innerHTML = 'Loading...';
-        showPage('subscribedPage');
-
-        const subList = JSON.parse(localStorage.getItem('joylix_sub_list') || '[]');
-        if (subList.length === 0) {
-            feed.innerHTML = '<p style="color: var(--text-sub); font-size: 0.85rem;">ඔබ තවම කිසිදු Profile එකක් Subscribe කර නොමැත.</p>';
-            return;
-        }
-
-        const snap = await database.ref('users').once('value');
-        const data = snap.val();
-        feed.innerHTML = '';
-
-        if (data) {
-            subList.forEach(uid => {
-                if (data[uid]) {
-                    const user = data[uid];
-                    const card = createProfileCardHTML(user);
-                    feed.appendChild(card);
-                }
-            });
-        }
-    }
-
-    function createProfileCardHTML(user) {
-        const myUserId = localStorage.getItem('joylix_my_user_id');
-        const isOwner = (myUserId && myUserId === user.uid);
-        const subList = JSON.parse(localStorage.getItem('joylix_sub_list') || '[]');
-        const isSubbed = subList.includes(user.uid);
-        const subCount = user.subscribes || 0;
-
-        let photosHTML = '';
-        if (user.photos && user.photos.length > 0) {
-            user.photos.forEach(p => {
-                const waMsg = encodeURIComponent(`Hello ${user.name}, I would like to buy your package for LKR ${p.price}`);
-                photosHTML += `
-                    <div class="photo-card" onclick="event.stopPropagation();">
-                        <img src="${p.url}" onclick="openLightbox('${p.url}')">
-                        <div style="padding: 4px; text-align:center;">
-                            <div style="color:#25D366; font-weight:bold; margin-bottom:2px; font-size:0.75rem;">LKR ${p.price}</div>
-                            <a href="https://wa.me/${user.phone}?text=${waMsg}" target="_blank" class="buy-btn">
-                                <i class="fab fa-whatsapp"></i> Buy
-                            </a>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        const card = document.createElement('div');
-        card.className = 'user-card';
-        card.onclick = () => viewSingleProfile(user.uid);
-        card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <div style="display:flex; gap:10px; align-items:center;">
-                    <img src="${user.avatar}" class="user-avatar" onclick="event.stopPropagation(); openLightbox('${user.avatar}')">
-                    <div>
-                        <h4 style="font-size: 0.95rem;">${user.name} ${isOwner ? '<span style="color:var(--accent-pink); font-size:0.7rem;">(You)</span>' : ''}</h4>
-                        <div style="font-size:0.75rem; color:var(--text-sub);">Age: ${user.age} | ${user.phone}</div>
-                    </div>
-                </div>
-                ${!isOwner ? `
-                    <button class="subscribe-btn ${isSubbed ? 'subscribed' : ''}" onclick="toggleSubscribe('${user.uid}', event)">
-                        <i class="fas ${isSubbed ? 'fa-check' : 'fa-plus'}"></i> ${isSubbed ? 'Subscribed' : 'Subscribe'} (${subCount})
-                    </button>
-                ` : ''}
-            </div>
-            <p style="margin-top:8px; font-size:0.8rem; color:#ccc; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${user.about}</p>
-            <div class="photo-grid">${photosHTML}</div>
-        `;
-        return card;
-    }
-
-    // Live Feed Listener
+    // Realtime Listener
     database.ref('users').on('value', snapshot => {
         const feed = document.getElementById('userFeed');
         feed.innerHTML = '';
-        const data = snapshot.val();
+        allUsersData = snapshot.val();
+        const myUserId = localStorage.getItem('joylix_my_user_id');
 
         updateHeaderPill();
 
-        if (!data) {
+        if (!allUsersData) {
             feed.innerHTML = '<p style="color: var(--text-sub); font-size: 0.9rem;">තවම Profiles නොමැත.</p>';
             return;
         }
 
-        Object.keys(data).forEach(key => {
-            const user = data[key];
-            const card = createProfileCardHTML(user);
+        Object.keys(allUsersData).forEach(key => {
+            const user = allUsersData[key];
+            let photosHTML = '';
+            
+            const subsCount = user.subscribers ? Object.keys(user.subscribers).length : 0;
+            const isSubbed = (user.subscribers && user.subscribers[myUserId]);
+
+            if (user.photos && user.photos.length > 0) {
+                user.photos.forEach(p => {
+                    const waMsg = encodeURIComponent(`Hello ${user.name}, I would like to buy your package for LKR ${p.price}`);
+                    photosHTML += `
+                        <div class="photo-card" onclick="event.stopPropagation();">
+                            <img src="${p.url}" onclick="openLightbox('${p.url}')">
+                            <div style="padding: 4px; text-align:center;">
+                                <div style="color:#25D366; font-weight:bold; margin-bottom:2px; font-size:0.75rem;">LKR ${p.price}</div>
+                                <a href="https://wa.me/${user.phone}?text=${waMsg}" target="_blank" class="buy-btn">
+                                    <i class="fab fa-whatsapp"></i> Buy
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            const isOwner = (myUserId && myUserId === user.uid);
+
+            const card = document.createElement('div');
+            card.className = 'user-card';
+            card.onclick = () => viewSingleProfile(user.uid);
+            card.innerHTML = `
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <img src="${user.avatar}" class="user-avatar" onclick="event.stopPropagation(); openLightbox('${user.avatar}')">
+                    <div style="flex:1;">
+                        <h4 style="font-size: 0.95rem;">${user.name} ${isOwner ? '<span style="color:var(--accent-pink); font-size:0.7rem;">(You)</span>' : ''}</h4>
+                        <div style="font-size:0.75rem; color:var(--text-sub);">Age: ${user.age} | ${user.phone}</div>
+                        <div style="font-size:0.7rem; color:var(--accent-pink); margin-top:2px;">
+                            <i class="fas fa-bell"></i> ${subsCount} Subscribers
+                        </div>
+                    </div>
+                    ${!isOwner ? `<button class="sub-btn ${isSubbed ? 'subscribed' : ''}" onclick="toggleSubscribe('${user.uid}', event)">${isSubbed ? 'Subscribed' : '+ Subscribe'}</button>` : ''}
+                </div>
+                <p style="margin-top:8px; font-size:0.8rem; color:#ccc; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${user.about}</p>
+                <div class="photo-grid">${photosHTML}</div>
+            `;
             feed.appendChild(card);
         });
     });
